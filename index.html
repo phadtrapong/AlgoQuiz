@@ -11,32 +11,48 @@
     <div class="quiz-container">
         <h1>Google Interview Quiz (Blind 75 MVP)</h1>
 
-        <!-- Progress Bar Area -->
-        <div class="progress-container">
-            <div id="progress-text"></div>
-            <div class="progress-bar-container">
-                <div id="progress-bar-fill"></div>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="quiz">Quiz</button>
+            <button class="tab-button" data-tab="question-list">Question List</button>
+        </div>
+
+        <!-- Quiz Tab Content -->
+        <div class="tab-content active" id="quiz-tab">
+            <!-- Progress Bar Area -->
+            <div class="progress-container">
+                <div id="progress-text"></div>
+                <div class="progress-bar-container">
+                    <div id="progress-bar-fill"></div>
+                </div>
+            </div>
+            <!-- End Progress Bar Area -->
+
+            <div id="question-area">
+                <h2 id="problem-title"></h2>
+                <div id="problem-statement"></div>
+                <pre><code id="code-skeleton" class="language-python"></code></pre>
+                <p><strong># TODO: Choose the correct implementation below</strong></p>
+            </div>
+
+            <div id="choices-area">
+                <!-- Choices will be populated by JavaScript -->
+            </div>
+
+            <button id="check-button">Check Answer</button>
+
+            <div id="feedback-area">
+                <!-- Feedback Correct/Incorrect will appear here -->
+            </div>
+            <button id="next-button" style="display: none;">Next Question</button>
+        </div>
+
+        <!-- Question List Tab Content -->
+        <div class="tab-content" id="question-list-tab">
+            <div id="questions-list">
+                <!-- Questions list will be populated by JavaScript -->
             </div>
         </div>
-        <!-- End Progress Bar Area -->
-
-        <div id="question-area">
-            <h2 id="problem-title"></h2>
-            <div id="problem-statement"></div>
-            <pre><code id="code-skeleton" class="language-python"></code></pre>
-            <p><strong># TODO: Choose the correct implementation below</strong></p>
-        </div>
-
-        <div id="choices-area">
-            <!-- Choices will be populated by JavaScript -->
-        </div>
-
-        <button id="check-button">Check Answer</button>
-
-        <div id="feedback-area">
-            <!-- Feedback Correct/Incorrect will appear here -->
-        </div>
-         <button id="next-button" style="display: none;">Next Question</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
