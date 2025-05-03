@@ -9,12 +9,13 @@
 </head>
 <body>
     <div class="quiz-container">
-        <h1>Google Interview Quiz (Blind 75 MVP)</h1>
+        <h1>Coding Interview Quiz</h1>
 
         <!-- Tab Navigation -->
         <div class="tab-navigation">
             <button class="tab-button active" data-tab="quiz">Quiz</button>
             <button class="tab-button" data-tab="question-list">Question List</button>
+            <button class="tab-button" data-tab="review">Review Progress</button>
         </div>
 
         <!-- Quiz Tab Content -->
@@ -53,6 +54,19 @@
                 <!-- Questions list will be populated by JavaScript -->
             </div>
         </div>
+
+        <!-- Review Tab Content -->
+        <div class="tab-content" id="review-tab">
+            <h2>Session Review</h2>
+            <div id="review-summary">
+                <!-- Summary stats will go here -->
+            </div>
+            <ul id="review-list">
+                <!-- Review items will be populated here -->
+            </ul>
+            <button id="reset-progress-button">Reset Progress</button>
+        </div>
+
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>

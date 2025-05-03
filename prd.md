@@ -62,7 +62,14 @@ AlgoQuiz is an interactive, Duolingo-inspired web application designed to help s
 *   **5.7. Question List View:**
     *   Display a list of all available question titles in the "Question List" tab.
     *   Allow users to click a question title to jump directly to that question in the quiz view.
-    *   Visually indicate which questions have been attempted/completed within the current session (Optional MVP enhancement, nice-to-have).
+    *   Visually indicate which questions have been answered (using ✅/❌ icons) based on saved session progress.
+*   **5.8. Session Persistence & Review:** (New Feature)
+    *   User progress (which questions answered, selected choice, correctness) is saved to `localStorage` after each answer.
+    *   On page load, the application checks `localStorage` for saved progress and resumes the quiz at the next unanswered question.
+    *   A new "Review Progress" tab is available.
+    *   The Review tab displays summary statistics: Total Answered, Correct, Incorrect, Score %.
+    *   The Review tab lists all answered questions, showing the title, correct/incorrect status, the user's selected answer (truncated), and the correct answer (truncated, if incorrect).
+    *   A "Reset Progress" button in the Review tab allows clearing the saved session data and starting fresh (with confirmation).
 
 ## 6. Design & UX Requirements
 
@@ -76,15 +83,15 @@ AlgoQuiz is an interactive, Duolingo-inspired web application designed to help s
 
 *   **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3. No external frameworks (React, Vue, Angular) for the MVP.
 *   **Libraries:** Prism.js for syntax highlighting.
-*   **Data:** Question data embedded as a JavaScript array of objects in `quiz.js`.
+*   **Data:** Question data loaded from an external `quiz-data.json`.
 *   **Compatibility:** Target modern web browsers (latest Chrome, Firefox, Safari, Edge).
 *   **Deployment:** Static site hosting (e.g., GitHub Pages, Netlify, Vercel). No backend server required.
-*   **Code Quality:** Adhere to rules defined in `.cursorrules` (consistent style, JSDoc for non-trivial functions, etc.).
+*   **Code Quality:** Adhere to rules defined in `.cursorrules` (consistent style, JSDoc for non-trivial functions, etc.). Recent refactoring in `quiz.js` has improved event handling and state management related to question lists and navigation.
 
 ## 8. Non-Goals (MVP)
 
-*   User accounts or persistent progress tracking across sessions.
-*   Saving quiz state if the browser is closed.
+*   User accounts or *cross-device* persistent progress tracking (uses `localStorage` only).
+*   Saving quiz state *mid-question* if the browser is closed.
 *   Support for languages other than Python for solutions.
 *   Allowing users to type code instead of multiple choice.
 *   Advanced analytics or performance tracking.

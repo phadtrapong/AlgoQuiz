@@ -1017,22 +1017,19 @@
     "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction isSameTree(p, q) {\n    // Your code here\n}",
     "choices": [
         {
-            "text": "Incorrect: Only checks node values without checking structure",
-            "code": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val;\n}",
+            "text": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val;\n}",
             "correct": false,
-            "explanation": "This solution only checks if the current nodes have the same value but doesn't verify the structure of the subtrees."
+            "explanation": "Incorrect: Only checks node values without checking structure. This solution only checks if the current nodes have the same value but doesn't verify the structure of the subtrees."
         },
         {
-            "text": "Correct: Recursively checks both structure and values",
-            "code": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "text": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
             "correct": true,
-            "explanation": "This solution correctly checks both the structure and values by recursively comparing left and right subtrees."
+            "explanation": "Correct: Recursively checks both structure and values. This solution correctly checks both the structure and values by recursively comparing left and right subtrees."
         },
         {
-            "text": "Incorrect: Doesn't handle null nodes properly",
-            "code": "function isSameTree(p, q) {\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "text": "function isSameTree(p, q) {\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
             "correct": false,
-            "explanation": "This solution will fail when either p or q is null because it tries to access .val on null."
+            "explanation": "Incorrect: Doesn't handle null nodes properly. This solution will fail when either p or q is null because it tries to access .val on null."
         }
     ]
 },

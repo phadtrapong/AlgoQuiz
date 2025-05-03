@@ -59,6 +59,7 @@ To create an engaging, Duolingo-inspired web application for practicing LeetCode
     *   Devise 2-3 plausible incorrect snippets (common errors, edge cases, inefficiencies).
     *   Write clear explanations for *each* choice's correctness/incorrectness.
     *   Add the question object to the `quizData` array in `quiz.js`.
+*   **Refactoring & Bug Fixing:** Recently refactored event listeners and list population logic in `quiz.js` to consolidate functionality, remove redundant code (`initializeQuestionList`, `loadQuestion` override), and fix bugs related to jumping between questions from the list view.
 *   **Code Structure:** Currently single HTML, CSS, and JS files. Potential for refactoring into modules as complexity grows.
 
 ## 6. Key Decisions & Rationale
