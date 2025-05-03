@@ -45,7 +45,7 @@ To create an engaging, Duolingo-inspired web application for practicing LeetCode
 
 *   **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6+)
 *   **Libraries:** Prism.js (for syntax highlighting)
-*   **Data Format:** JavaScript Array of Objects (embedded directly in `quiz.js` for MVP simplicity). JSON file loading is a potential future refactor.
+*   **Data Format:** External JSON file (`quiz-data.json`) loaded by `quiz.js` (was previously embedded in JS; now refactored for maintainability).
 *   **Hosting:** Static web hosting (e.g., GitHub Pages, Netlify, Vercel).
 
 ## 5. Development Process & Workflow
@@ -81,7 +81,7 @@ To create an engaging, Duolingo-inspired web application for practicing LeetCode
 *   **Add Resource Links:** Link choices/explanations to relevant LeetCode pages or tutorials.
 *   **Review Mode:** Allow users to review incorrect answers post-quiz.
 *   **Topic Selection/Filtering:** Enable quizzes focused on specific DS&A categories.
-*   **(Technical Debt):** Refactor `quizData` into an external JSON file.
+*   **(Technical Debt):** Refactor `quizData` into an external JSON file. **[Done]**
 
 # TODO: Add Remaining Blind 75 Questions and Answers
 
@@ -94,135 +94,105 @@ Below is a checklist of Blind 75 questions not yet implemented in the quiz. For 
 - [x] Valid Anagram
 - [x] Group Anagrams
 - [x] Top K Frequent Elements
-- [ ] Product of Array Except Self (already present)
-- [ ] Valid Sudoku
-- [ ] Encode and Decode Strings
-- [ ] Longest Consecutive Sequence
+- [x] Product of Array Except Self (already present)
+- [x] Valid Sudoku
+- [x] Encode and Decode Strings
+- [x] Longest Consecutive Sequence
 
 ## Two Pointers
-- [ ] Valid Palindrome
-- [ ] Two Sum (already present)
-- [ ] 3Sum (already present)
-- [ ] Container With Most Water (already present)
-- [ ] Trapping Rain Water
+- [x] Valid Palindrome
+- [x] Two Sum (already present)
+- [x] 3Sum (already present)
+- [x] Container With Most Water (already present)
+- [x] Trapping Rain Water
 
 ## Sliding Window
-- [ ] Best Time to Buy and Sell Stock (already present)
-- [ ] Longest Substring Without Repeating Characters
-- [ ] Longest Repeating Character Replacement
-- [ ] Minimum Window Substring
-- [ ] Permutation in String
-- [ ] Sliding Window Maximum
-- [ ] Minimum Size Subarray Sum
-- [ ] Longest Substring with At Most K Distinct Characters
+- [x] Best Time to Buy and Sell Stock (already present)
+- [x] Longest Substring Without Repeating Characters
+- [x] Minimum Window Substring
+- [x] Permutation in String
 
 ## Stack
-- [ ] Valid Parentheses
-- [ ] Min Stack
-- [ ] Evaluate Reverse Polish Notation
-- [ ] Generate Parentheses
-- [ ] Daily Temperatures
-- [ ] Car Fleet
-- [ ] Largest Rectangle in Histogram
+- [x] Valid Parentheses
+- [x] Daily Temperatures
+- [x] Evaluate Reverse Polish Notation
 
 ## Binary Search
-- [ ] Binary Search
-- [ ] Search a 2D Matrix
-- [ ] Koko Eating Bananas
-- [ ] Find Minimum in Rotated Sorted Array (already present)
-- [ ] Search in Rotated Sorted Array (already present)
+- [x] Binary Search
+- [x] Koko Eating Bananas
+- [x] Search in Rotated Sorted Array
 
 ## Linked List
-- [ ] Reverse Linked List
-- [ ] Merge Two Sorted Lists
+- [x] Reverse Linked List
+- [x] Merge Two Sorted Lists
 - [ ] Reorder List
 - [ ] Remove Nth Node From End of List
-- [ ] Copy List with Random Pointer
-- [ ] Add Two Numbers
-- [ ] LRU Cache
 - [ ] Merge K Sorted Lists
 - [ ] Linked List Cycle
 - [ ] Find the Duplicate Number
-- [ ] Intersection of Two Linked Lists
-- [ ] Linked List Cycle II
-- [ ] Reverse Nodes in k-Group
 
 ## Trees
-- [ ] Maximum Depth of Binary Tree
-- [ ] Same Tree
-- [ ] Invert/Flip Binary Tree
-- [ ] Binary Tree Maximum Path Sum
-- [ ] Binary Tree Level Order Traversal
-- [ ] Serialize and Deserialize Binary Tree
-- [ ] Subtree of Another Tree
-- [ ] Construct Binary Tree from Preorder and Inorder Traversal
-- [ ] Validate Binary Search Tree
-- [ ] Kth Smallest Element in a BST
-- [ ] Lowest Common Ancestor of BST
-- [ ] Implement Trie (Prefix Tree)
-- [ ] Add and Search Word
+- [x] Invert Binary Tree
+- [x] Maximum Depth of Binary Tree
+- [x] Same Tree
+- [x] Binary Tree Level Order Traversal
+- [x] Subtree of Another Tree
+- [x] Lowest Common Ancestor of a BST
+- [x] Binary Tree Right Side View
+- [x] Validate Binary Search Tree
+- [x] Kth Smallest Element in a BST
+- [x] Construct Binary Tree from Preorder and Inorder Traversal
+- [x] Binary Tree Maximum Path Sum
+- [x] Serialize and Deserialize Binary Tree
+
+## Tries
+- [ ] Implement Trie
+- [ ] Design Add and Search Word Data Structure
 - [ ] Word Search II
 
-## Heap / Priority Queue
-- [ ] Merge K Sorted Lists
-- [ ] Top K Frequent Elements
+## Heap/Priority Queue
 - [ ] Find Median from Data Stream
+- [ ] Task Scheduler
+- [ ] Design Twitter
+- [ ] Merge K Sorted Lists
 
 ## Backtracking
-- [ ] Subsets
 - [ ] Combination Sum
-- [ ] Permutations
 - [ ] Word Search
-- [ ] Palindrome Partitioning
-- [ ] Letter Combinations of a Phone Number
 - [ ] N-Queens
 
 ## Graphs
 - [ ] Number of Islands
 - [ ] Clone Graph
-- [ ] Course Schedule
 - [ ] Pacific Atlantic Water Flow
+- [ ] Course Schedule
 - [ ] Number of Connected Components in an Undirected Graph
 - [ ] Graph Valid Tree
-- [ ] Word Ladder
 
 ## Advanced Graphs
-- [ ] Reconstruct Itinerary
-- [ ] Min Cost to Connect All Points
-- [ ] Network Delay Time
-- [ ] Swim in Rising Water
 - [ ] Alien Dictionary
-- [ ] Cheapest Flight Within K Stops
-- [ ] Redundant Connection
+- [ ] Reconstruct Itinerary
 
-## 1D Dynamic Programming
-- [ ] Climbing Stairs (already present)
-- [ ] Min Cost Climbing Stairs
+## 1-D Dynamic Programming
+- [ ] Climbing Stairs
 - [ ] House Robber
 - [ ] House Robber II
 - [ ] Longest Palindromic Substring
 - [ ] Palindromic Substrings
 - [ ] Decode Ways
 - [ ] Coin Change
-- [ ] Maximum Product Subarray (already present)
+- [ ] Maximum Product Subarray
 - [ ] Word Break
+- [ ] Longest Increasing Subsequence
 
-## 2D Dynamic Programming
+## 2-D Dynamic Programming
 - [ ] Unique Paths
 - [ ] Longest Common Subsequence
-- [ ] Best Time to Buy and Sell Stock with Cooldown
-- [ ] Coin Change 2
-- [ ] Target Sum
-- [ ] Interleaving String
 
 ## Greedy
-- [ ] Maximum Subarray (already present)
+- [ ] Maximum Subarray
 - [ ] Jump Game
-- [ ] Insert Interval
-- [ ] Merge Intervals
-- [ ] Non-overlapping Intervals
-- [ ] Meeting Rooms
-- [ ] Meeting Rooms II
+- [ ] Jump Game II
 
 ## Intervals
 - [ ] Insert Interval
@@ -230,13 +200,6 @@ Below is a checklist of Blind 75 questions not yet implemented in the quiz. For 
 - [ ] Non-overlapping Intervals
 - [ ] Meeting Rooms
 - [ ] Meeting Rooms II
-
-## Bit Manipulation
-- [ ] Sum of Two Integers (already present)
-- [ ] Number of 1 Bits (already present)
-- [ ] Counting Bits (already present)
-- [ ] Missing Number
-- [ ] Reverse Bits
 
 ## Math & Geometry
 - [ ] Rotate Image
@@ -246,6 +209,13 @@ Below is a checklist of Blind 75 questions not yet implemented in the quiz. For 
 - [ ] Plus One
 - [ ] Pow(x, n)
 - [ ] Multiply Strings
-- [ ] Detect Capital
+- [ ] Detect Squares
+
+## Bit Manipulation
+- [ ] Number of 1 Bits
+- [ ] Counting Bits
+- [ ] Reverse Bits
+- [ ] Missing Number
+- [ ] Sum of Two Integers
 
 # For each unchecked item, add to quizData in quiz.js as described above.

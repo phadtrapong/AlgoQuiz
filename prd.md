@@ -52,7 +52,7 @@ AlgoQuiz is an interactive, Duolingo-inspired web application designed to help s
     *   "Next Question" button appears after checking an answer, loads the subsequent question.
     *   Tab navigation to switch between the main "Quiz" view and a "Question List" view.
 *   **5.5. Question Pool & Loading:**
-    *   Quiz questions (title, statement, skeleton, choices, correct flag, explanations) are sourced from an embedded JavaScript array (`quizData` in `quiz.js`).
+    *   Quiz questions (title, statement, skeleton, choices, correct flag, explanations) are sourced from an external JSON file (`quiz-data.json`) loaded by `quiz.js`.
     *   Questions are shuffled using Fisher-Yates algorithm at the start of a session.
     *   Load questions sequentially from the shuffled list.
 *   **5.6. Progress Tracking:**
@@ -102,7 +102,7 @@ AlgoQuiz is an interactive, Duolingo-inspired web application designed to help s
 
 ## 10. Future Considerations (Post-MVP Roadmap)
 
-*   **Refactor `quizData`:** Move question data to an external JSON file for better maintainability and scalability.
+*   **Refactor `quizData`:** (Done) Question data is now loaded from an external JSON file for better maintainability and scalability.
 *   **Complete Content:** Add all remaining Blind 75 questions.
 *   **Enhance Explanations:** Improve display format, potentially add links to external resources or LeetCode discussions.
 *   **Review Mode:** Allow users to review all questions and their answers/explanations after completing a quiz.
@@ -111,4 +111,4 @@ AlgoQuiz is an interactive, Duolingo-inspired web application designed to help s
 *   **User Accounts:** Basic user accounts to track long-term progress and performance.
 *   **More Languages:** Support for other popular interview languages (e.g., Java, C++, JavaScript).
 *   **Accessibility Improvements:** Conduct thorough accessibility audit and implement necessary ARIA attributes and keyboard navigation enhancements.
-*   **Mobile Optimization:** Improve layout and usability on smaller screens. 
+*   **Mobile Optimization:** Improve layout and usability on smaller screens.

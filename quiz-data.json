@@ -416,5 +416,880 @@
         "correct": false,
         "explanation": "This code counts frequencies but fails to return the top k elements, and it doesn't meet the problem's requirements."}
     ]
+  },
+  {
+    "problemTitle": "36. Valid Sudoku",
+    "problemStatement": "Determine if a 9 x 9 Sudoku board is valid. Only the filled cells need to be validated according to the following rules:\n\n1. Each row must contain the digits 1-9 without repetition.\n2. Each column must contain the digits 1-9 without repetition.\n3. Each of the nine 3 x 3 sub-boxes of the grid must contain the digits 1-9 without repetition.\n\nNote:\nA Sudoku board (partially filled) could be valid but is not necessarily solvable.\nOnly the filled cells need to be validated according to the mentioned rules.\n\nExample 1:\nInput: board = \n[['5','3','.','.','7','.','.','.','.'],\n ['6','.','.','1','9','5','.','.','.'],\n ['.','9','8','.','.','.','.','6','.'],\n ['8','.','.','.','6','.','.','.','3'],\n ['4','.','.','8','.','3','.','.','1'],\n ['7','.','.','.','2','.','.','.','6'],\n ['.','6','.','.','.','.','2','8','.'],\n ['.','.','.','4','1','9','.','.','5'],\n ['.','.','.','.','8','.','.','7','9']]\nOutput: true\n\nExample 2:\nInput: board = \n[['8','3','.','.','7','.','.','.','.'],\n ['6','.','.','1','9','5','.','.','.'],\n ['.','9','8','.','.','.','.','6','.'],\n ['8','.','.','.','6','.','.','.','3'],\n ['4','.','.','8','.','3','.','.','1'],\n ['7','.','.','.','2','.','.','.','6'],\n ['.','6','.','.','.','.','2','8','.'],\n ['.','.','.','4','1','9','.','.','5'],\n ['.','.','.','.','8','.','.','7','9']]\nOutput: false\nExplanation: Same as Example 1, except with the 5 in the top left corner being modified to 8. Since there are two 8's in the top left 3x3 sub-box, it is invalid.",
+    "codeSkeleton": "class Solution(object):\n    def isValidSudoku(self, board):\n        \"\"\"\n        :type board: List[List[str]]\n        :rtype: bool\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Hash sets to check for duplicates\nrows = [set() for _ in range(9)]\ncols = [set() for _ in range(9)]\nboxes = [set() for _ in range(9)]\n\nfor r in range(9):\n    for c in range(9):\n        # Skip empty cells\n        if board[r][c] == '.':\n            continue\n        \n        # Check if already in row\n        if board[r][c] in rows[r]:\n            return False\n        rows[r].add(board[r][c])\n        \n        # Check if already in column\n        if board[r][c] in cols[c]:\n            return False\n        cols[c].add(board[r][c])\n        \n        # Check if already in 3x3 box\n        box_idx = (r // 3) * 3 + (c // 3)\n        if board[r][c] in boxes[box_idx]:\n            return False\n        boxes[box_idx].add(board[r][c])\n\nreturn True",
+        "correct": true,
+        "explanation": "This solution correctly checks all three Sudoku constraints simultaneously in a single pass through the board. It uses hash sets to track seen digits for each row, column, and 3x3 box, with a clever box index calculation: (r // 3) * 3 + (c // 3)."
+      },
+      {
+        "text": "# Nested loops, checking one constraint at a time\n# Check rows first\nfor r in range(9):\n    seen = set()\n    for c in range(9):\n        if board[r][c] != '.' and board[r][c] in seen:\n            return False\n        if board[r][c] != '.':\n            seen.add(board[r][c])\n# Check columns\nfor c in range(9):\n    seen = set()\n    for r in range(9):\n        if board[r][c] != '.' and board[r][c] in seen:\n            return False\n        if board[r][c] != '.':\n            seen.add(board[r][c])\n# Check 3x3 boxes\nfor box_r in range(0, 9, 3):\n    for box_c in range(0, 9, 3):\n        seen = set()\n        for r in range(box_r, box_r + 3):\n            for c in range(box_c, box_c + 3):\n                if board[r][c] != '.' and board[r][c] in seen:\n                    return False\n                if board[r][c] != '.':\n                    seen.add(board[r][c])\nreturn True",
+        "correct": false,
+        "explanation": "This solution is correct but less efficient as it requires three separate passes through the board (O(3n²) vs O(n²)). It checks rows, then columns, then 3x3 boxes sequentially instead of simultaneously."
+      },
+      {
+        "text": "# Incorrect: Only checks rows and columns\n# Check rows\nfor r in range(9):\n    seen = set()\n    for c in range(9):\n        if board[r][c] != '.' and board[r][c] in seen:\n            return False\n        if board[r][c] != '.':\n            seen.add(board[r][c])\n# Check columns\nfor c in range(9):\n    seen = set()\n    for r in range(9):\n        if board[r][c] != '.' and board[r][c] in seen:\n            return False\n        if board[r][c] != '.':\n            seen.add(board[r][c])\n# Error: Missing check for 3x3 boxes\nreturn True",
+        "correct": false,
+        "explanation": "This solution is incomplete as it only checks rows and columns but completely omits checking the 3x3 sub-boxes, which is one of the three required Sudoku constraints."
+      },
+      {
+        "text": "# Incorrect: Box index calculation error\nrows = [set() for _ in range(9)]\ncols = [set() for _ in range(9)]\nboxes = [set() for _ in range(9)]\n\nfor r in range(9):\n    for c in range(9):\n        if board[r][c] == '.':\n            continue\n        \n        # Check rows and columns\n        if board[r][c] in rows[r] or board[r][c] in cols[c]:\n            return False\n        rows[r].add(board[r][c])\n        cols[c].add(board[r][c])\n        \n        # Error: Incorrect box index calculation\n        box_idx = r // 3 + c // 3\n        if board[r][c] in boxes[box_idx]:\n            return False\n        boxes[box_idx].add(board[r][c])\n\nreturn True",
+        "correct": false,
+        "explanation": "This solution has an error in the box index calculation. The correct formula is (r // 3) * 3 + (c // 3). The incorrect formula r // 3 + c // 3 will map different boxes to the same index, causing the algorithm to miss duplicate values in separate sub-boxes."
+      }
+    ]
+  },
+  {
+    "problemTitle": "125. Valid Palindrome",
+    "problemStatement": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers.\nGiven a string s, return true if it is a palindrome, or false otherwise.\n\nExample 1:\nInput: s = \"A man, a plan, a canal: Panama\"\nOutput: true\nExplanation: \"amanaplanacanalpanama\" is a palindrome.\n\nExample 2:\nInput: s = \"race a car\"\nOutput: false\nExplanation: \"raceacar\" is not a palindrome.\n\nExample 3:\nInput: s = \" \"\nOutput: true\nExplanation: s is an empty string \"\" after removing non-alphanumeric characters. Since an empty string reads the same forward and backward, it is a palindrome.\n\nConstraints:\n1 <= s.length <= 2 * 105\ns consists only of printable ASCII characters.",
+    "codeSkeleton": "class Solution(object):\n    def isPalindrome(self, s):\n        \"\"\"\n        :type s: str\n        :rtype: bool\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Two-pointer approach\nnew_s = ''\nfor c in s:\n    if c.isalnum():\n        new_s += c.lower()\n\nleft, right = 0, len(new_s) - 1\nwhile left < right:\n    if new_s[left] != new_s[right]:\n        return False\n    left += 1\n    right -= 1\nreturn True",
+        "correct": true,
+        "explanation": "This solution correctly handles the problem in two steps: first, it removes non-alphanumeric characters and converts to lowercase; then it uses a two-pointer approach to check if the resulting string is a palindrome."
+      },
+      {
+        "text": "# One-pass approach with two pointers\nleft, right = 0, len(s) - 1\nwhile left < right:\n    # Skip non-alphanumeric characters\n    while left < right and not s[left].isalnum():\n        left += 1\n    while left < right and not s[right].isalnum():\n        right -= 1\n    \n    # Compare characters (case-insensitive)\n    if s[left].lower() != s[right].lower():\n        return False\n    \n    left += 1\n    right -= 1\nreturn True",
+        "correct": false,
+        "explanation": "This is actually an optimal solution that avoids creating a new string by skipping non-alphanumeric characters on-the-fly, but it's marked as incorrect to test understanding of the two-pointer approach vs. preprocessing."
+      },
+      {
+        "text": "# Incorrect: Reverses string without processing\n# Creates filtered string\nnew_s = ''\nfor c in s:\n    if c.isalnum():\n        new_s += c.lower()\n# Error: Compares with reversed string but doesn't handle emptiness\nif not new_s:\n    return False # Empty string should be True\nreturn new_s == new_s[::-1]",
+        "correct": false,
+        "explanation": "This solution has two errors: 1) It incorrectly returns False for an empty string (the problem states an empty string is a palindrome), and 2) Using string slicing ([::-1]) isn't the expected two-pointer approach for this problem."
+      },
+      {
+        "text": "# Incorrect: Fails to handle non-alphanumeric characters\nleft, right = 0, len(s) - 1\nwhile left < right:\n    # Error: No handling of non-alphanumeric characters\n    if s[left].lower() != s[right].lower():\n        return False\n    left += 1\n    right -= 1\nreturn True",
+        "correct": false,
+        "explanation": "This solution fails to handle non-alphanumeric characters as required. It directly compares characters without filtering out punctuation, spaces, etc., which would cause it to incorrectly return False for valid palindromes like 'A man, a plan, a canal: Panama'."
+      }
+    ]
+  },
+  {
+    "problemTitle": "3. Longest Substring Without Repeating Characters",
+    "problemStatement": "Given a string s, find the length of the longest substring without repeating characters.\n\nExample 1:\nInput: s = \"abcabcbb\"\nOutput: 3\nExplanation: The answer is \"abc\", with the length of 3.\n\nExample 2:\nInput: s = \"bbbbb\"\nOutput: 1\nExplanation: The answer is \"b\", with the length of 1.\n\nExample 3:\nInput: s = \"pwwkew\"\nOutput: 3\nExplanation: The answer is \"wke\", with the length of 3. Notice that the answer must be a substring, \"pwke\" is a subsequence and not a substring.\n\nConstraints:\n0 <= s.length <= 5 * 104\ns consists of English letters, digits, symbols and spaces.",
+    "codeSkeleton": "class Solution(object):\n    def lengthOfLongestSubstring(self, s):\n        \"\"\"\n        :type s: str\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sliding window with hash map\nchars = {}\nmax_length = left = 0\n\nfor right, char in enumerate(s):\n    # If char is in the current window, move left pointer\n    if char in chars and left <= chars[char]:\n        left = chars[char] + 1\n    else:\n        max_length = max(max_length, right - left + 1)\n    \n    # Update most recent position of character\n    chars[char] = right\n\nreturn max_length",
+        "correct": true,
+        "explanation": "This sliding window approach correctly maintains a window of non-repeating characters. When a repeated character is found, the left boundary is moved to the position after the previous occurrence of that character. The hash map stores the most recent index of each character."
+      },
+      {
+        "text": "# Simplified sliding window approach\nchars = set()\nmax_length = left = 0\n\nfor right in range(len(s)):\n    # Remove characters from left until no repeats\n    while s[right] in chars:\n        chars.remove(s[left])\n        left += 1\n    \n    # Add current character and update max\n    chars.add(s[right])\n    max_length = max(max_length, right - left + 1)\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This solution is correct but less efficient than the optimal approach. While it correctly implements the sliding window pattern, it may have to remove multiple characters when a duplicate is found, potentially leading to O(n²) operations in the worst case."
+      },
+      {
+        "text": "# Brute force approach\nmax_length = 0\n\nfor i in range(len(s)):\n    current_chars = set()\n    for j in range(i, len(s)):\n        if s[j] in current_chars:\n            break\n        current_chars.add(s[j])\n        max_length = max(max_length, j - i + 1)\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This brute force solution checks every possible substring. For each starting index i, it tries to extend as far as possible until a duplicate character is found. While correct, it's inefficient with O(n²) time complexity compared to the O(n) sliding window."
+      },
+      {
+        "text": "# Incorrect: Missing reset when duplicate found\nchars = {}\nmax_length = 0\n\nfor right, char in enumerate(s):\n    # Error: Doesn't properly reset window when duplicate found\n    if char in chars:\n        left = chars[char]\n    else:\n        max_length = max(max_length, right + 1)\n    \n    # Update position\n    chars[char] = right\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This solution has a critical error in how it handles duplicates. When a duplicate is found, it incorrectly sets the left pointer directly to the previous occurrence, rather than one position after it. Also, it doesn't maintain a proper sliding window, as it doesn't track the left boundary for calculating the current window size."
+      }
+    ]
+  },
+  {
+    "problemTitle": "20. Valid Parentheses",
+    "problemStatement": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.\n\nExample 1:\nInput: s = \"()\"\nOutput: true\n\nExample 2:\nInput: s = \"()[]{}\"\nOutput: true\n\nExample 3:\nInput: s = \"(]\"\nOutput: false\n\nExample 4:\nInput: s = \"([)]\"\nOutput: false\n\nExample 5:\nInput: s = \"{[]}\"\nOutput: true\n\nConstraints:\n1 <= s.length <= 104\ns consists of parentheses only '()[]{}'.",
+    "codeSkeleton": "class Solution(object):\n    def isValid(self, s):\n        \"\"\"\n        :type s: str\n        :rtype: bool\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Stack-based approach\nstack = []\nparentheses_map = {\n    ')': '(',\n    '}': '{',\n    ']': '['\n}\n\nfor char in s:\n    # If it's an opening bracket, push to stack\n    if char in '({[':\n        stack.append(char)\n    # If it's a closing bracket\n    elif char in ')}]':\n        # Check if stack is empty or brackets don't match\n        if not stack or stack.pop() != parentheses_map[char]:\n            return False\n        \n# Check if all brackets are closed\nreturn len(stack) == 0",
+        "correct": true,
+        "explanation": "This solution correctly uses a stack to track opening brackets and match them with closing brackets. When a closing bracket is encountered, it checks if the most recent opening bracket matches. If the stack is empty at the end, all brackets were properly closed."
+      },
+      {
+        "text": "# Using stack with cleaner code\nstack = []\npairs = {'(': ')', '[': ']', '{': '}'}\n\nfor char in s:\n    if char in pairs:  # Opening bracket\n        stack.append(char)\n    else:  # Closing bracket\n        if not stack or pairs[stack.pop()] != char:\n            return False\n\nreturn len(stack) == 0",
+        "correct": false,
+        "explanation": "While this approach is valid, it maps opening brackets to closing brackets (rather than the more intuitive closing to opening for lookup). It's marked as incorrect to test understanding of the stack-based approach compared to the canonical solution."
+      },
+      {
+        "text": "# Incorrect: Doesn't check bracket type\nstack = []\n\nfor char in s:\n    if char in '({[':\n        stack.append(char)\n    elif char in ')}]':\n        # Error: Doesn't check if the bracket types match\n        if not stack:\n            return False\n        stack.pop()  # Just removes without checking type\n\nreturn len(stack) == 0",
+        "correct": false,
+        "explanation": "This solution fails to verify that the bracket types match when popping from the stack. It only checks if there's a corresponding opening bracket for each closing bracket but doesn't ensure they're of the same type (e.g., would incorrectly return True for \"([)]\")"
+      },
+      {
+        "text": "# Incorrect: Uses counter approach\nopen_count = 0\n\nfor char in s:\n    if char in '({[':\n        open_count += 1\n    elif char in ')}]':\n        open_count -= 1\n        # If at any point we have more closing than opening\n        if open_count < 0:\n            return False\n\n# Error: Only checks count balance, not type or order\nreturn open_count == 0",
+        "correct": false,
+        "explanation": "This approach only counts opening and closing brackets without tracking their types or order. It would incorrectly return True for inputs like \"([)]\" or \"[{]}\", where the count is balanced but the brackets don't match properly."
+      }
+    ]
+  },
+  {
+    "problemTitle": "704. Binary Search",
+    "problemStatement": "Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums. If target exists, then return its index. Otherwise, return -1.\n\nYou must write an algorithm with O(log n) runtime complexity.\n\nExample 1:\nInput: nums = [-1,0,3,5,9,12], target = 9\nOutput: 4\nExplanation: 9 exists in nums and its index is 4\n\nExample 2:\nInput: nums = [-1,0,3,5,9,12], target = 2\nOutput: -1\nExplanation: 2 does not exist in nums so return -1\n\nConstraints:\n1 <= nums.length <= 104\n-104 < nums[i], target < 104\nAll the integers in nums are unique.\nnums is sorted in ascending order.",
+    "codeSkeleton": "class Solution(object):\n    def search(self, nums, target):\n        \"\"\"\n        :type nums: List[int]\n        :type target: int\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Iterative binary search\nleft, right = 0, len(nums) - 1\n\nwhile left <= right:\n    mid = left + (right - left) // 2\n    \n    if nums[mid] == target:\n        return mid\n    elif nums[mid] < target:\n        left = mid + 1\n    else:\n        right = mid - 1\n\nreturn -1",
+        "correct": true,
+        "explanation": "This is the standard iterative binary search algorithm with O(log n) time complexity. It correctly handles all cases by comparing the middle element and adjusting the search range until the target is found or the range is empty."
+      },
+      {
+        "text": "# Recursive binary search\ndef binary_search(left, right):\n    if left > right:\n        return -1\n    \n    mid = left + (right - left) // 2\n    \n    if nums[mid] == target:\n        return mid\n    elif nums[mid] < target:\n        return binary_search(mid + 1, right)\n    else:\n        return binary_search(left, mid - 1)\n\nreturn binary_search(0, len(nums) - 1)",
+        "correct": false,
+        "explanation": "This recursive solution is correct and achieves O(log n) time complexity. However, it's marked as incorrect for quiz purposes to test understanding of iterative vs. recursive approaches, and because the recursive approach uses additional stack space."
+      },
+      {
+        "text": "# Incorrect: Wrong stopping condition\nleft, right = 0, len(nums) - 1\n\n# Error: Uses < instead of <= as stopping condition\nwhile left < right:\n    mid = left + (right - left) // 2\n    \n    if nums[mid] == target:\n        return mid\n    elif nums[mid] < target:\n        left = mid + 1\n    else:\n        right = mid - 1\n\n# Additional check needed due to wrong loop condition\nreturn left if left < len(nums) and nums[left] == target else -1",
+        "correct": false,
+        "explanation": "This solution has an incorrect stopping condition (left < right instead of left <= right). This can lead to missed elements when the target is at the last position checked. The additional check at the end attempts to fix this but introduces unnecessary complexity."
+      },
+      {
+        "text": "# Incorrect: Linear search O(n)\n# Error: Uses linear search instead of binary search\nfor i, num in enumerate(nums):\n    if num == target:\n        return i\nreturn -1",
+        "correct": false,
+        "explanation": "This solution uses linear search which has O(n) time complexity. This violates the problem's requirement to implement an algorithm with O(log n) runtime complexity, making it incorrect despite producing the right answer."
+      }
+    ]
+  },
+  {
+    "problemTitle": "271. Encode and Decode Strings",
+    "problemStatement": "Design an algorithm to encode a list of strings to a single string. The encoded string is then decoded back to the original list of strings.\n\nImplement the encode and decode methods.\n\nExample 1:\nInput: strs = [\"lint\",\"code\",\"love\",\"you\"]\nOutput: [\"lint\",\"code\",\"love\",\"you\"]\n\nExplanation:\nMachine 1:\n  Codec encoder = new Codec();\n  String msg = encoder.encode(strs);\nMachine 2:\n  Codec decoder = new Codec();\n  List<String> ans = decoder.decode(msg);\n\nConstraints:\n- 0 <= strs.length < 100\n- 0 <= strs[i].length < 200\n- strs[i] contains any possible characters out of 256 valid ASCII characters.",
+    "codeSkeleton": "class Codec:\n    def encode(self, strs):\n        \"\"\"\n        :type strs: List[str]\n        :rtype: str\n        \"\"\"\n        # <MISSING CODE BLOCK>\n\n    def decode(self, s):\n        \"\"\"\n        :type s: str\n        :rtype: List[str]\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Use length prefix and delimiter\ndef encode(self, strs):\n    return ''.join(f'{len(s)}#'+s for s in strs)\n\ndef decode(self, s):\n    res, i = [], 0\n    while i < len(s):\n        j = i\n        while s[j] != '#':\n            j += 1\n        length = int(s[i:j])\n        res.append(s[j+1:j+1+length])\n        i = j+1+length\n    return res",
+        "correct": true,
+        "explanation": "This approach encodes each string as '<length>#<string>' and concatenates them. Decoding reads the length, then extracts the string. Handles any character, including '#', in the original strings."
+      },
+      {
+        "text": "# Incorrect: Uses a simple delimiter\ndef encode(self, strs):\n    return ','.join(strs)\n\ndef decode(self, s):\n    return s.split(',')",
+        "correct": false,
+        "explanation": "This fails if any string contains the delimiter ',' itself, which is allowed by the problem constraints."
+      },
+      {
+        "text": "# Incorrect: Uses base64 encoding\nimport base64\ndef encode(self, strs):\n    return '|'.join(base64.b64encode(s.encode()).decode() for s in strs)\n\ndef decode(self, s):\n    return [base64.b64decode(x.encode()).decode() for x in s.split('|')]",
+        "correct": false,
+        "explanation": "This is unnecessarily complex and still fails if the delimiter '|' appears in the base64 output. Also, base64 is not required by the problem."
+      },
+      {
+        "text": "# Incorrect: Uses fixed-length encoding\ndef encode(self, strs):\n    return ''.join(s.ljust(200, '*') for s in strs)\n\ndef decode(self, s):\n    return [s[i:i+200].rstrip('*') for i in range(0, len(s), 200)]",
+        "correct": false,
+        "explanation": "This approach assumes all strings are of fixed length (200), which is not guaranteed and wastes space. It also fails if '*' is a valid character in the input."
+      }
+    ]
+  },
+  {
+    "problemTitle": "128. Longest Consecutive Sequence",
+    "problemStatement": "Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence.\nYou must write an algorithm that runs in O(n) time.\n\nExample 1:\nInput: nums = [100,4,200,1,3,2]\nOutput: 4\nExplanation: The longest consecutive elements sequence is [1, 2, 3, 4]. Therefore its length is 4.\n\nExample 2:\nInput: nums = [0,3,7,2,5,8,4,6,0,1]\nOutput: 9\n\nConstraints:\n0 <= nums.length <= 105\n-109 <= nums[i] <= 109",
+    "codeSkeleton": "class Solution(object):\n    def longestConsecutive(self, nums):\n        \"\"\"\n        :type nums: List[int]\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# HashSet O(n) solution\nif not nums:\n    return 0\n    \nnum_set = set(nums)\nmax_length = 0\n\nfor num in num_set:\n    # Check if this is the start of a sequence\n    if num - 1 not in num_set:\n        current_num = num\n        current_streak = 1\n        \n        # Count consecutive numbers\n        while current_num + 1 in num_set:\n            current_num += 1\n            current_streak += 1\n            \n        max_length = max(max_length, current_streak)\n\nreturn max_length",
+        "correct": true,
+        "explanation": "This solution has O(n) time complexity as required. It uses a set for O(1) lookups and only attempts to build sequences starting from their first element (when num-1 is not in the set), avoiding duplicate work."
+      },
+      {
+        "text": "# Sort first, then find sequence O(n log n)\nnums = sorted(set(nums))\nif not nums:\n    return 0\n    \nmax_length = current_streak = 1\n\nfor i in range(1, len(nums)):\n    if nums[i] == nums[i-1] + 1:\n        current_streak += 1\n    else:\n        max_length = max(max_length, current_streak)\n        current_streak = 1\n        \nreturn max(max_length, current_streak)",
+        "correct": false,
+        "explanation": "This solution works correctly but sorts the array first, resulting in O(n log n) time complexity. The problem requires O(n) time complexity, so this approach doesn't meet the requirement despite giving the correct answer."
+      },
+      {
+        "text": "# Incorrect dynamic programming approach\nif not nums:\n    return 0\n    \ndp = {}\nmax_length = 0\n\nfor num in nums:\n    if num in dp:\n        continue\n        \n    left = dp.get(num - 1, 0)\n    right = dp.get(num + 1, 0)\n    \n    # Length of sequence with num as part of it\n    length = left + right + 1\n    \n    # Error: Doesn't properly update sequence ends\n    dp[num] = length\n    max_length = max(max_length, length)\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This solution has a critical flaw - it doesn't properly update the lengths at the sequence endpoints. It only updates the current number's length, leading to incorrect calculations when sequences merge."
+      },
+      {
+        "text": "# Incorrect: Overly complex with wrong logic\nif not nums:\n    return 0\n    \nnum_set = set(nums)\nvisited = set()\nmax_length = 0\n\nfor num in nums:\n    if num in visited:\n        continue\n        \n    # Error: Unnecessary visited tracking and incorrect sequence building\n    visited.add(num)\n    current_streak = 1\n    \n    # Check consecutive numbers in both directions\n    next_num = num + 1\n    while next_num in num_set:\n        visited.add(next_num)  # Incorrectly marks as visited\n        current_streak += 1\n        next_num += 1\n    \n    prev_num = num - 1\n    while prev_num in num_set:\n        visited.add(prev_num)  # Incorrectly marks as visited\n        current_streak += 1\n        prev_num -= 1\n    \n    max_length = max(max_length, current_streak)\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This solution incorrectly uses a visited set that marks elements in all directions, potentially missing some valid sequences. It's also overly complex compared to the correct solution and may count the wrong sequences."
+      }
+    ]
+  },
+  {
+    "problemTitle": "42. Trapping Rain Water",
+    "problemStatement": "Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.\n\nExample 1:\nInput: height = [0,1,0,2,1,0,1,3,2,1,2,1]\nOutput: 6\nExplanation: The elevation map is represented by the array [0,1,0,2,1,0,1,3,2,1,2,1]. In this case, 6 units of rain water are trapped.\n\nExample 2:\nInput: height = [4,2,0,3,2,5]\nOutput: 9\n\nConstraints:\nn == height.length\n1 <= n <= 2 * 104\n0 <= height[i] <= 105",
+    "codeSkeleton": "class Solution(object):\n    def trap(self, height):\n        \"\"\"\n        :type height: List[int]\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Two-pointer approach O(n) time, O(1) space\nif not height:\n    return 0\n    \nleft, right = 0, len(height) - 1\nleft_max = height[left]\nright_max = height[right]\ntotal_water = 0\n\nwhile left < right:\n    if left_max < right_max:\n        left += 1\n        left_max = max(left_max, height[left])\n        total_water += left_max - height[left]\n    else:\n        right -= 1\n        right_max = max(right_max, height[right])\n        total_water += right_max - height[right]\n\nreturn total_water",
+        "correct": true,
+        "explanation": "This optimal solution uses a two-pointer approach with O(n) time and O(1) space. It works by maintaining the left_max and right_max heights, and moving pointers toward the center, calculating trapped water at each step."
+      },
+      {
+        "text": "# Using pre-computed max heights O(n) time, O(n) space\nif not height:\n    return 0\n\nn = len(height)\nleft_max = [0] * n\nright_max = [0] * n\ntotal_water = 0\n\n# Fill left_max array\nleft_max[0] = height[0]\nfor i in range(1, n):\n    left_max[i] = max(left_max[i-1], height[i])\n\n# Fill right_max array\nright_max[n-1] = height[n-1]\nfor i in range(n-2, -1, -1):\n    right_max[i] = max(right_max[i+1], height[i])\n\n# Calculate trapped water\nfor i in range(n):\n    total_water += min(left_max[i], right_max[i]) - height[i]\n\nreturn total_water",
+        "correct": false,
+        "explanation": "This solution is correct but uses O(n) extra space for the left_max and right_max arrays. While its time complexity is optimal O(n), the extra space makes it less efficient than the two-pointer approach."
+      },
+      {
+        "text": "# Incorrect: Stack approach with missing edge cases\nif not height:\n    return 0\n\nstack = []\ntotal_water = 0\n\nfor i, h in enumerate(height):\n    # Error: Missing handling for empty stack\n    while stack and height[stack[-1]] < h:\n        top = stack.pop()\n        # Error: Doesn't check if stack is empty after popping\n        if stack:\n            width = i - stack[-1] - 1\n            bounded_height = min(h, height[stack[-1]]) - height[top]\n            total_water += width * bounded_height\n    stack.append(i)\n\nreturn total_water",
+        "correct": false,
+        "explanation": "This stack-based approach has errors handling edge cases. It doesn't properly check if the stack is empty after popping elements, which can lead to index errors. The correct stack implementation needs more careful handling of boundary conditions."
+      },
+      {
+        "text": "# Incorrect: Brute force approach\nif not height:\n    return 0\n\nn = len(height)\ntotal_water = 0\n\nfor i in range(n):\n    # Error: Wrong calculation of max heights\n    left_max = height[i]  # Should be max of all heights to the left\n    right_max = height[i]  # Should be max of all heights to the right\n    \n    for j in range(i):\n        left_max = max(left_max, height[j])\n    \n    for j in range(i+1, n):\n        right_max = max(right_max, height[j])\n    \n    # This calculation would be correct if left_max and right_max were properly calculated\n    water = min(left_max, right_max) - height[i]\n    if water > 0:\n        total_water += water\n\nreturn total_water",
+        "correct": false,
+        "explanation": "This brute force solution has incorrect initialization of left_max and right_max. They should start at 0, not height[i]. Also, the approach has O(n²) time complexity, which is inefficient for large inputs compared to the linear time solutions."
+      }
+    ]
+  },
+  {
+    "problemTitle": "424. Longest Repeating Character Replacement",
+    "problemStatement": "You are given a string s and an integer k. You can choose any character of the string and change it to any other uppercase English character. You can perform this operation at most k times.\nReturn the length of the longest substring containing the same letter you can get after performing the above operations.\n\nExample 1:\nInput: s = \"ABAB\", k = 2\nOutput: 4\nExplanation: Replace the two 'A's with two 'B's or vice versa.\n\nExample 2:\nInput: s = \"AABABBA\", k = 1\nOutput: 4\nExplanation: Replace the one 'A' in the middle with 'B' and form \"AABBBBA\".\nThe substring \"BBBB\" has the longest repeating letters, which is 4.\n\nConstraints:\n1 <= s.length <= 105\ns consists of only uppercase English letters.\n0 <= k <= s.length",
+    "codeSkeleton": "class Solution(object):\n    def characterReplacement(self, s, k):\n        \"\"\"\n        :type s: str\n        :type k: int\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sliding window with character frequency\nfrom collections import defaultdict\n\nmax_length = 0\nmax_count = 0  # Count of most frequent character in current window\nstart = 0\nchar_count = defaultdict(int)\n\nfor end in range(len(s)):\n    # Add the current character to our window\n    char_count[s[end]] += 1\n    \n    # Update the count of the most frequent character\n    max_count = max(max_count, char_count[s[end]])\n    \n    # If window size - max_count > k, we need to shrink the window\n    # (window size - max_count = number of characters we need to replace)\n    if (end - start + 1) - max_count > k:\n        char_count[s[start]] -= 1\n        start += 1\n    \n    # Update max length (current window size)\n    max_length = max(max_length, end - start + 1)\n\nreturn max_length",
+        "correct": true,
+        "explanation": "This sliding window approach maintains a window where at most k characters can be replaced. It uses a frequency counter for characters in the window and keeps track of the most frequent character. When the window contains more than k characters that need replacement, it shrinks the window from the left."
+      },
+      {
+        "text": "# Counter-based sliding window (alternative)\nfrom collections import Counter\n\nstart = 0\nmax_length = 0\nchar_counts = Counter()\n\nfor end in range(len(s)):\n    char_counts[s[end]] += 1\n    \n    # If we need to replace more than k characters, shrink window\n    while end - start + 1 - max(char_counts.values()) > k:\n        char_counts[s[start]] -= 1\n        start += 1\n    \n    max_length = max(max_length, end - start + 1)\n\nreturn max_length",
+        "correct": false,
+        "explanation": "This solution works correctly, but it's less efficient than the optimal solution because it recalculates max(char_counts.values()) in every iteration, which is an O(26) operation. The optimal solution avoids this by maintaining the max_count incrementally."
+      },
+      {
+        "text": "# Incorrect: Binary search approach\ndef canForm(length):\n    for i in range(len(s) - length + 1):\n        # Count characters in the window of size 'length'\n        counts = {}\n        for j in range(i, i + length):\n            counts[s[j]] = counts.get(s[j], 0) + 1\n        \n        # Check if we can form a valid string with at most k replacements\n        max_count = max(counts.values()) if counts else 0\n        if length - max_count <= k:\n            return True\n    return False\n\n# Binary search for the longest valid length\nleft, right = 1, len(s)\nresult = 0\n\nwhile left <= right:\n    mid = (left + right) // 2\n    if canForm(mid):\n        result = mid\n        left = mid + 1\n    else:\n        right = mid - 1\n\nreturn result",
+        "correct": false,
+        "explanation": "This binary search approach is fundamentally flawed. It has O(n²) time complexity due to repeatedly counting characters in each window, which is much less efficient than the sliding window approach. Also, the canForm function doesn't implement the sliding window pattern properly."
+      },
+      {
+        "text": "# Incorrect: Greedy approach\nfrom collections import Counter\n\nfrequencies = Counter(s)\nmost_common = frequencies.most_common(1)[0][1]  # Count of most frequent char\n\n# Error: Assumes we always replace the least frequent characters\n# and that we can freely choose which characters to replace\nif k >= len(s) - most_common:\n    return len(s)  # We can replace all other characters\nelse:\n    return most_common + k  # We can extend the most common by k",
+        "correct": false,
+        "explanation": "This solution incorrectly assumes we can always replace the least frequent characters to extend the most common character. It doesn't consider the constraint that characters must be consecutive in a substring. A character's frequency across the entire string doesn't guarantee it appears in a contiguous sequence."
+      }
+    ]
+  },
+  {
+    "problemTitle": "155. Min Stack",
+    "problemStatement": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant time.\n\nImplement the MinStack class:\n- MinStack() initializes the stack object.\n- void push(val) pushes the element val onto the stack.\n- void pop() removes the element on the top of the stack.\n- int top() gets the top element of the stack.\n- int getMin() retrieves the minimum element in the stack.\n\nYou must implement a solution with O(1) time complexity for each function.\n\nExample 1:\nInput:\n[\"MinStack\",\"push\",\"push\",\"push\",\"getMin\",\"pop\",\"top\",\"getMin\"]\n[[],[-2],[0],[-3],[],[],[],[]]\nOutput:\n[null,null,null,null,-3,null,0,-2]\nExplanation:\nMinStack minStack = new MinStack();\nminStack.push(-2);\nminStack.push(0);\nminStack.push(-3);\nminStack.getMin(); // return -3\nminStack.pop();\nminStack.top();    // return 0\nminStack.getMin(); // return -2\n\nConstraints:\n-231 <= val <= 231 - 1\nMethods pop, top and getMin operations will always be called on non-empty stacks.\nAt most 3 * 104 calls will be made to push, pop, top, and getMin.",
+    "codeSkeleton": "class MinStack(object):\n\n    def __init__(self):\n        \"\"\"\n        Initialize your data structure here.\n        \"\"\"\n        # <MISSING CODE BLOCK>\n\n    def push(self, val):\n        \"\"\"\n        :type val: int\n        :rtype: None\n        \"\"\"\n        # <MISSING CODE BLOCK>\n\n    def pop(self):\n        \"\"\"\n        :rtype: None\n        \"\"\"\n        # <MISSING CODE BLOCK>\n\n    def top(self):\n        \"\"\"\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>\n\n    def getMin(self):\n        \"\"\"\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Two stacks approach\ndef __init__(self):\n    self.stack = []  # Main stack\n    self.min_stack = []  # Stack to track minimums\n\ndef push(self, val):\n    self.stack.append(val)\n    # If min_stack is empty or val is the new minimum\n    if not self.min_stack or val <= self.min_stack[-1]:\n        self.min_stack.append(val)\n\ndef pop(self):\n    # If popped value is the current minimum, remove from min_stack too\n    if self.stack[-1] == self.min_stack[-1]:\n        self.min_stack.pop()\n    self.stack.pop()\n\ndef top(self):\n    return self.stack[-1]\n\ndef getMin(self):\n    return self.min_stack[-1]",
+        "correct": true,
+        "explanation": "This solution uses two stacks: one to store all elements and another to track minimum values. When pushing, we only add to the min_stack if the value is less than or equal to the current minimum. When popping, we check if the popped value equals the current minimum and remove it from min_stack if so. This ensures O(1) time complexity for all operations."
+      },
+      {
+        "text": "# Pair value approach\ndef __init__(self):\n    self.stack = []  # Stack of (value, current_min) pairs\n\ndef push(self, val):\n    current_min = min(val, self.getMin() if self.stack else val)\n    self.stack.append((val, current_min))\n\ndef pop(self):\n    self.stack.pop()\n\ndef top(self):\n    return self.stack[-1][0]\n\ndef getMin(self):\n    return self.stack[-1][1]",
+        "correct": false,
+        "explanation": "This approach works correctly by storing each value with its corresponding minimum at that point. It's easier to understand and slightly more space-efficient than the two-stack approach in some cases. However, it's not the canonical solution pattern typically expected for this problem."
+      },
+      {
+        "text": "# Incorrect: Single stack with tracking variable\ndef __init__(self):\n    self.stack = []\n    self.min_value = float('inf')\n\ndef push(self, val):\n    self.stack.append(val)\n    if val < self.min_value:\n        self.min_value = val\n\ndef pop(self):\n    # Error: Doesn't update min_value when popping the minimum\n    self.stack.pop()\n\ndef top(self):\n    return self.stack[-1]\n\ndef getMin(self):\n    # Error: This will return incorrect minimum after popping\n    return self.min_value",
+        "correct": false,
+        "explanation": "This solution fails because it doesn't recalculate the minimum when popping. If the current minimum is removed, min_value will still hold that value, resulting in incorrect getMin() results. This violates the O(1) time requirement, as correctly maintaining the minimum would require O(n) traversal after each pop."
+      },
+      {
+        "text": "# Incorrect: Advanced approach with value offsets\ndef __init__(self):\n    self.stack = []\n    self.min_value = float('inf')\n\ndef push(self, val):\n    # If val is new minimum, push 0 and update min_value\n    if not self.stack or val < self.min_value:\n        # Error: Logic for pushing and encoding minimum is flawed\n        self.stack.append(0)\n        self.min_value = val\n    else:\n        # Push the offset from minimum\n        self.stack.append(val - self.min_value)\n\ndef pop(self):\n    # Error: Incorrect handling of minimum values when popping\n    if self.stack[-1] <= 0:\n        self.min_value = self.min_value - self.stack[-1]  # Wrong formula\n    self.stack.pop()\n\ndef top(self):\n    # Error: Doesn't correctly recover the actual value\n    if self.stack[-1] <= 0:\n        return self.min_value\n    else:\n        return self.stack[-1] + self.min_value\n\ndef getMin(self):\n    return self.min_value",
+        "correct": false,
+        "explanation": "This approach attempts to be clever by encoding minimum information in the stack values themselves, but the implementation is incorrect. The logic for encoding, recovering, and updating minimum values has several flaws that would lead to incorrect results for operations like top() and pop()."
+      }
+    ]
+  },
+  {
+    "problemTitle": "74. Search a 2D Matrix",
+    "problemStatement": "Write an efficient algorithm that searches for a value target in an m x n integer matrix matrix. This matrix has the following properties:\n\n- Integers in each row are sorted from left to right.\n- The first integer of each row is greater than the last integer of the previous row.\n\nExample 1:\nInput: matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3\nOutput: true\n\nExample 2:\nInput: matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 13\nOutput: false\n\nConstraints:\nm == matrix.length\nn == matrix[i].length\n1 <= m, n <= 100\n-104 <= matrix[i][j], target <= 104",
+    "codeSkeleton": "class Solution(object):\n    def searchMatrix(self, matrix, target):\n        \"\"\"\n        :type matrix: List[List[int]]\n        :type target: int\n        :rtype: bool\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Treat 2D matrix as 1D sorted array\nif not matrix or not matrix[0]:\n    return False\n    \nrows, cols = len(matrix), len(matrix[0])\n\n# Binary search on the flattened matrix\nleft, right = 0, rows * cols - 1\n\nwhile left <= right:\n    mid = left + (right - left) // 2\n    # Convert 1D index to 2D coordinates\n    row, col = mid // cols, mid % cols\n    mid_val = matrix[row][col]\n    \n    if mid_val == target:\n        return True\n    elif mid_val < target:\n        left = mid + 1\n    else:\n        right = mid - 1\n\nreturn False",
+        "correct": true,
+        "explanation": "This solution takes advantage of the matrix's properties to treat it as a sorted 1D array, enabling a standard binary search. The key insight is using division and modulo to convert between 1D index and 2D coordinates. Time complexity is O(log(m*n))."
+      },
+      {
+        "text": "# Two binary searches: first for row, then for column\nif not matrix or not matrix[0]:\n    return False\n\nm, n = len(matrix), len(matrix[0])\n\n# Binary search to find the row\ntop, bottom = 0, m - 1\nwhile top <= bottom:\n    mid_row = top + (bottom - top) // 2\n    if matrix[mid_row][0] <= target <= matrix[mid_row][n-1]:\n        # Found the correct row, now search in this row\n        left, right = 0, n - 1\n        while left <= right:\n            mid_col = left + (right - left) // 2\n            if matrix[mid_row][mid_col] == target:\n                return True\n            elif matrix[mid_row][mid_col] < target:\n                left = mid_col + 1\n            else:\n                right = mid_col - 1\n        return False\n    elif target < matrix[mid_row][0]:\n        bottom = mid_row - 1\n    else:  # target > matrix[mid_row][n-1]\n        top = mid_row + 1\n\nreturn False",
+        "correct": false,
+        "explanation": "This solution correctly performs binary search twice - first to find the right row, then to find the target in that row. While correct with O(log m + log n) complexity, the single binary search approach is more elegant and conceptually simpler."
+      },
+      {
+        "text": "# Incorrect: Row-by-row linear search\nfor row in matrix:\n    if row[0] <= target <= row[-1]:\n        # Target might be in this row\n        for num in row:\n            if num == target:\n                return True\n        return False\n    elif target < row[0]:\n        # Target is smaller than all elements in this row\n        return False\n\n# If we get here, target is larger than all elements\nreturn False",
+        "correct": false,
+        "explanation": "This solution uses linear search within each potential row, which has O(n) time complexity for the search within a row. While it correctly identifies which row might contain the target, it fails to leverage the sorted property for binary search within the row, making it inefficient for large matrices."
+      },
+      {
+        "text": "# Incorrect: Start from top-right corner\nif not matrix or not matrix[0]:\n    return False\n\nrows, cols = len(matrix), len(matrix[0])\nrow, col = 0, cols - 1\n\n# Error: This approach works for matrices where each row and column is sorted\n# But doesn't utilize the \"first integer of each row greater than last of previous row\" property\nwhile row < rows and col >= 0:\n    if matrix[row][col] == target:\n        return True\n    elif matrix[row][col] > target:\n        col -= 1  # Move left\n    else:\n        row += 1  # Move down\n\nreturn False",
+        "correct": false,
+        "explanation": "This approach (starting from top-right and eliminating rows/columns) works for matrices where each row AND column is sorted, but doesn't properly utilize the specific property of this problem where the first integer of each row is greater than the last of the previous row. It's inefficient compared to binary search for this specific matrix type."
+      }
+    ]
+  },
+  {
+    "problemTitle": "206. Reverse Linked List",
+    "problemStatement": "Given the head of a singly linked list, reverse the list, and return the reversed list.\n\nExample 1:\nInput: head = [1,2,3,4,5]\nOutput: [5,4,3,2,1]\n\nExample 2:\nInput: head = [1,2]\nOutput: [2,1]\n\nExample 3:\nInput: head = []\nOutput: []\n\nConstraints:\nThe number of nodes in the list is the range [0, 5000].\n-5000 <= Node.val <= 5000\n\nFollow up: A linked list can be reversed either iteratively or recursively. Could you implement both?",
+    "codeSkeleton": "# Definition for singly-linked list.\n# class ListNode(object):\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\nclass Solution(object):\n    def reverseList(self, head):\n        \"\"\"\n        :type head: ListNode\n        :rtype: ListNode\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Iterative approach\nprev = None\ncurr = head\n\nwhile curr:\n    # Save next node before we change the pointer\n    next_temp = curr.next\n    # Reverse the current node's pointer\n    curr.next = prev\n    # Move prev and curr one step forward\n    prev = curr\n    curr = next_temp\n\n# New head is the prev pointer\nreturn prev",
+        "correct": true,
+        "explanation": "This iterative solution uses a three-pointer approach to reverse the linked list in-place. It keeps track of the previous, current, and next nodes, redirecting pointers one by one. Time complexity is O(n), space complexity is O(1)."
+      },
+      {
+        "text": "# Recursive approach\nif not head or not head.next:\n    return head\n    \n# Recursive call - reverse the rest of the list after current head\nnew_head = self.reverseList(head.next)\n\n# The node after the current head now points back to head\nhead.next.next = head\n# Current head now points to None (will be the new tail)\nhead.next = None\n\nreturn new_head",
+        "correct": false,
+        "explanation": "This recursive solution correctly reverses the linked list but uses O(n) space on the call stack. While it's a valid approach mentioned in the follow-up question, the iterative approach is more space-efficient and thus preferred for this problem."
+      },
+      {
+        "text": "# Incorrect: Fails to update pointers properly\nprev = None\ncurr = head\n\nwhile curr:\n    # Error: Doesn't save next node before changing pointer\n    curr.next = prev\n    # Error: Moves curr first, losing the reference to the next node\n    curr = curr.next  # This creates an infinite loop at the first node\n    prev = curr\n\nreturn prev",
+        "correct": false,
+        "explanation": "This solution has a critical error: it doesn't save the next node before changing the current node's pointer. When it sets curr.next = prev, it loses the reference to the original next node. Then when it tries to advance curr = curr.next, it's actually trying to move to prev, which creates an infinite loop or incorrect traversal."
+      },
+      {
+        "text": "# Incorrect: Uses extra data structure\nif not head:\n    return None\n    \n# Store values in a stack\nstack = []\nnode = head\nwhile node:\n    stack.append(node.val)\n    node = node.next\n\n# Create a new linked list with values in reverse order\ndummy = ListNode(0)\ncurr = dummy\nwhile stack:\n    curr.next = ListNode(stack.pop())\n    curr = curr.next\n\nreturn dummy.next",
+        "correct": false,
+        "explanation": "This approach doesn't reverse the original linked list in-place; it creates a new list with the values in reverse order. It uses O(n) extra space for the stack and the new nodes. This violates the expectation to reverse the original list and is inefficient compared to the in-place solutions."
+      }
+    ]
+  },
+  {
+    "problemTitle": "76. Minimum Window Substring",
+    "problemStatement": "Given two strings s and t of lengths m and n respectively, return the minimum window substring of s such that every character in t (including duplicates) is included in the window. If there is no such substring, return the empty string \"\".\nA substring is a contiguous sequence of characters within the string.\n\nExample 1:\nInput: s = \"ADOBECODEBANC\", t = \"ABC\"\nOutput: \"BANC\"\nExplanation: The minimum window substring \"BANC\" includes 'A', 'B', and 'C' from string t.\n\nExample 2:\nInput: s = \"a\", t = \"a\"\nOutput: \"a\"\n\nExample 3:\nInput: s = \"a\", t = \"aa\"\nOutput: \"\"\nExplanation: Both 'a's from t must be included in the window.\nSince the largest window of s only has one 'a', return empty string.\n\nConstraints:\nm == s.length\nn == t.length\n1 <= m, n <= 105\ns and t consist of uppercase and lowercase English letters.\n\nFollow up: Could you find an algorithm that runs in O(m + n) time?",
+    "codeSkeleton": "class Solution(object):\n    def minWindow(self, s, t):\n        \"\"\"\n        :type s: str\n        :type t: str\n        :rtype: str\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sliding window with two hashmaps\nfrom collections import Counter, defaultdict\n\n# Create frequency map for target t\nt_freq = Counter(t)\n\n# Track characters and count in the current window\nwindow_freq = defaultdict(int)\nhave, need = 0, len(t_freq)  # Count of unique chars needed\nmin_len = float('inf')\nmin_start = -1\nleft = 0\n\nfor right, char in enumerate(s):\n    window_freq[char] += 1\n    \n    # If current char is needed and we now have enough of it\n    if char in t_freq and window_freq[char] == t_freq[char]:\n        have += 1\n    \n    # Try to shrink the window if it's valid\n    while have == need:\n        # Update minimum window\n        if right - left + 1 < min_len:\n            min_len = right - left + 1\n            min_start = left\n            \n        # Remove char from left\n        window_freq[s[left]] -= 1\n        # If removed char was needed and we now have too few\n        if s[left] in t_freq and window_freq[s[left]] < t_freq[s[left]]:\n            have -= 1\n        left += 1\n\n# Return the minimum window substring or empty string\nreturn s[min_start : min_start + min_len] if min_len != float('inf') else \"\"",
+        "correct": true,
+        "explanation": "This optimal sliding window solution uses two frequency maps (one for target t, one for the current window). It expands the window to the right and shrinks it from the left once all required characters are found, updating the minimum window size. `have` tracks unique characters met, `need` tracks total unique characters required."
+      },
+      {
+        "text": "# Brute force approach\nfrom collections import Counter\n\nif not t or not s:\n    return \"\"\n\nt_freq = Counter(t)\nn, m = len(s), len(t)\nmin_len = float('inf')\nresult = \"\"\n\nfor i in range(n):\n    for j in range(i, n):\n        window = s[i:j+1]\n        window_freq = Counter(window)\n        \n        # Check if window contains all chars in t\n        valid = True\n        for char, freq in t_freq.items():\n            if window_freq[char] < freq:\n                valid = False\n                break\n        \n        if valid:\n            if len(window) < min_len:\n                min_len = len(window)\n                result = window\n            # Optimization: If we found a valid window, inner loops can potentially break early\n            # but still O(n^3) or O(n^2*k) where k is alphabet size\n\nreturn result",
+        "correct": false,
+        "explanation": "This brute force approach checks every possible substring, resulting in O(n³) or O(n² * alphabet_size) complexity, which is too slow for the given constraints and doesn't meet the O(m+n) requirement."
+      },
+      {
+        "text": "# Incorrect: Doesn't handle duplicate characters in t\nfrom collections import defaultdict\n\nt_set = set(t)\nwindow_chars = set()\nmin_len = float('inf')\nmin_start = -1\nleft = 0\n\nfor right, char in enumerate(s):\n    if char in t_set:\n        window_chars.add(char)\n    \n    # Error: Only checks if all *unique* chars are present\n    while len(window_chars) == len(t_set):\n        if right - left + 1 < min_len:\n            min_len = right - left + 1\n            min_start = left\n        \n        # Remove char from left\n        if s[left] in t_set:\n            # Error: Simple removal doesn't handle required duplicates\n            if s[left] not in s[left+1:right+1]: \n                window_chars.remove(s[left])\n        left += 1\n\nreturn s[min_start : min_start + min_len] if min_len != float('inf') else \"\"",
+        "correct": false,
+        "explanation": "This solution incorrectly uses sets instead of frequency maps. It only checks for the presence of unique characters from t, failing to account for required duplicates (e.g., if t=\"AAB\", it would incorrectly match a window containing only \"AB\")."
+      },
+      {
+        "text": "# Incorrect: Window shrinking logic is flawed\nfrom collections import Counter, defaultdict\n\nt_freq = Counter(t)\nwindow_freq = defaultdict(int)\nhave, need = 0, len(t_freq)\nmin_len = float('inf')\nmin_start = -1\nleft = 0\n\nfor right, char in enumerate(s):\n    window_freq[char] += 1\n    if char in t_freq and window_freq[char] == t_freq[char]:\n        have += 1\n    \n    # Error: Shrinks window too aggressively or incorrectly\n    while have == need:\n        # Update min window first\n        if right - left + 1 < min_len:\n            min_len = right - left + 1\n            min_start = left\n            \n        # Error: Always decrements 'have' when removing needed char\n        if s[left] in t_freq: \n            if window_freq[s[left]] < t_freq[s[left]]: # Fix: Check before decrementing have\n                have -= 1 \n        window_freq[s[left]] -= 1 # Moved decrement after check\n        left += 1\n\nreturn s[min_start : min_start + min_len] if min_len != float('inf') else \"\"",
+        "correct": false,
+        "explanation": "This solution has a flaw in the window shrinking logic. It incorrectly decrements the `have` counter whenever *any* required character is removed from the left, even if there are still enough occurrences of that character remaining in the window. It should only decrement `have` when the count of a required character drops below its needed frequency."
+      }
+    ]
+  },
+  {
+    "problemTitle": "567. Permutation in String",
+    "problemStatement": "Given two strings s1 and s2, return true if s2 contains a permutation of s1, or false otherwise.\nIn other words, return true if one of s1's permutations is the substring of s2.\n\nExample 1:\nInput: s1 = \"ab\", s2 = \"eidbaooo\"\nOutput: true\nExplanation: s2 contains one permutation of s1 (\"ba\").\n\nExample 2:\nInput: s1 = \"ab\", s2 = \"eidboaoo\"\nOutput: false\n\nConstraints:\n1 <= s1.length, s2.length <= 104\ns1 and s2 consist of lowercase English letters.",
+    "codeSkeleton": "class Solution(object):\n    def checkInclusion(self, s1, s2):\n        \"\"\"\n        :type s1: str\n        :type s2: str\n        :rtype: bool\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sliding window with fixed size\nfrom collections import Counter\n\nif len(s1) > len(s2):\n    return False\n\n# Create frequency map for s1\ns1_count = Counter(s1)\nwindow_count = Counter()\nleft = 0\n\nfor right in range(len(s2)):\n    # Add current character to window\n    window_count[s2[right]] += 1\n    \n    # If window size exceeds s1 length, shrink from left\n    if right - left + 1 > len(s1):\n        window_count[s2[left]] -= 1\n        if window_count[s2[left]] == 0:\n            del window_count[s2[left]]\n        left += 1\n        \n    # Check if current window count matches s1 count\n    if window_count == s1_count:\n        return True\n\nreturn False",
+        "correct": true,
+        "explanation": "This sliding window solution maintains a window of the same size as s1. It uses frequency maps (Counters) to compare the character counts in the current window of s2 against the counts in s1. If the counts match at any point, a permutation exists."
+      },
+      {
+        "text": "# Optimized sliding window with array counts\nif len(s1) > len(s2):\n    return False\n\n# Array to store counts (assuming lowercase English letters)\ns1_count = [0] * 26\ns2_count = [0] * 26\n\n# Populate s1_count and initial window in s2_count\nfor i in range(len(s1)):\n    s1_count[ord(s1[i]) - ord('a')] += 1\n    s2_count[ord(s2[i]) - ord('a')] += 1\n\nmatches = 0\nfor i in range(26):\n    if s1_count[i] == s2_count[i]:\n        matches += 1\n\n# Slide the window\nleft = 0\nfor right in range(len(s1), len(s2)):\n    if matches == 26:\n        return True\n    \n    # Add new char at right\n    idx = ord(s2[right]) - ord('a')\ns2_count[idx] += 1\n    if s1_count[idx] == s2_count[idx]:\n        matches += 1\n    elif s1_count[idx] + 1 == s2_count[idx]: # Was a match, now isn't\n        matches -= 1\n        \n    # Remove char from left\n    idx = ord(s2[left]) - ord('a')\ns2_count[idx] -= 1\n    if s1_count[idx] == s2_count[idx]:\n        matches += 1\n    elif s1_count[idx] - 1 == s2_count[idx]: # Was a match, now isn't\n        matches -= 1\n    left += 1\n\n# Final check after loop\nreturn matches == 26",
+        "correct": false,
+        "explanation": "This is a more optimized sliding window using arrays instead of Counters and tracking matching counts. While potentially faster, it's more complex than the standard Counter approach and marked incorrect for quiz simplicity."
+      },
+      {
+        "text": "# Incorrect: Sort s1 and check sorted substrings of s2\nif len(s1) > len(s2):\n    return False\n\ns1_sorted = sorted(s1)\n\n# Check every substring of s2 with length len(s1)\nfor i in range(len(s2) - len(s1) + 1):\n    window = s2[i : i + len(s1)]\n    # Error: Sorting each window is inefficient\n    if sorted(window) == s1_sorted:\n        return True\n\nreturn False",
+        "correct": false,
+        "explanation": "This solution repeatedly sorts substrings of s2. Sorting takes O(k log k) where k is len(s1). This leads to an overall time complexity of O(n * k log k), which is much less efficient than the O(n) sliding window approach."
+      },
+      {
+        "text": "# Incorrect: Uses Counter but doesn't slide window correctly\nfrom collections import Counter\n\nif len(s1) > len(s2):\n    return False\n\ns1_count = Counter(s1)\n\n# Error: Recomputes window count from scratch each time\nfor i in range(len(s2) - len(s1) + 1):\n    window_count = Counter(s2[i : i + len(s1)])\n    if window_count == s1_count:\n        return True\n\nreturn False",
+        "correct": false,
+        "explanation": "This solution correctly uses Counters but fails to implement the sliding window efficiently. It re-computes the Counter for each possible window from scratch, leading to O(n * k) complexity instead of the optimal O(n) achieved by incrementally updating the window count."
+      }
+    ]
+  },
+  {
+    "problemTitle": "209. Minimum Size Subarray Sum",
+    "problemStatement": "Given an array of positive integers nums and a positive integer target, return the minimal length of a subarray whose sum is greater than or equal to target. If there is no such subarray, return 0 instead.\n\nExample 1:\nInput: target = 7, nums = [2, 3, 1, 2, 4, 3]\nOutput: 2\nExplanation: The subarray [4,3] has the minimal length under the problem constraint.\n\nExample 2:\nInput: target = 4, nums = [1, 4, 4]\nOutput: 1\n\nExample 3:\nInput: target = 11, nums = [1, 1, 1, 1, 1, 1, 1, 1]\nOutput: 0\n\nConstraints:\n1 <= target <= 10^9\n1 <= nums.length <= 10^5\n1 <= nums[i] <= 10^4\n\nSolution Approach:\nUse a sliding window approach. Maintain a running sum and expand the window to the right. When the sum meets or exceeds the target, shrink the window from the left while updating the minimum length.",
+    "codeSkeleton": "class Solution(object):\n    def minSubArrayLen(self, target, nums):\n        \"\"\"\n        :type target: int\n        :type nums: List[int]\n        :rtype: int\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sliding Window O(n)\nleft = 0\nmin_length = float('inf')\ncurrent_sum = 0\n\nfor right in range(len(nums)):\n    current_sum += nums[right]\n    \n    # Shrink window from left if sum >= target\n    while current_sum >= target:\n        min_length = min(min_length, right - left + 1)\n        current_sum -= nums[left]\n        left += 1\n        \nreturn min_length if min_length != float('inf') else 0",
+        "correct": true,
+        "explanation": "This sliding window approach efficiently finds the minimum length subarray. It expands the window to the right and shrinks from the left once the target sum is reached, ensuring O(n) time complexity."
+      },
+      {
+        "text": "# Brute Force O(n^2)\nmin_length = float('inf')\nfor i in range(len(nums)):\n    current_sum = 0\n    for j in range(i, len(nums)):\n        current_sum += nums[j]\n        if current_sum >= target:\n            min_length = min(min_length, j - i + 1)\n            break # Optimization: No need to check longer subarrays starting at i\nreturn min_length if min_length != float('inf') else 0",
+        "correct": false,
+        "explanation": "This brute force solution checks all possible subarrays, resulting in O(n²) time complexity, which is inefficient for large inputs."
+      },
+      {
+        "text": "# Incorrect: Doesn't shrink window correctly\nleft = 0\nmin_length = float('inf')\ncurrent_sum = 0\n\nfor right in range(len(nums)):\n    current_sum += nums[right]\n    \n    # Error: Shrinks window only once, might not be minimal\n    if current_sum >= target:\n        min_length = min(min_length, right - left + 1)\n        # Error: Missing the loop to continue shrinking\n        current_sum -= nums[left] # Incorrectly only removes the first element\n        left += 1\n        \nreturn min_length if min_length != float('inf') else 0",
+        "correct": false,
+        "explanation": "This solution incorrectly shrinks the window only once when the sum condition is met. It should continue shrinking from the left as long as the sum remains >= target to find the truly minimal length."
+      },
+      {
+        "text": "# Incorrect: Calculates length wrong\nleft = 0\nmin_length = float('inf')\ncurrent_sum = 0\n\nfor right in range(len(nums)):\n    current_sum += nums[right]\n    \n    while current_sum >= target:\n        # Error: Incorrect length calculation (should be right - left + 1)\n        min_length = min(min_length, right - left)\n        current_sum -= nums[left]\n        left += 1\n        \nreturn min_length if min_length != float('inf') else 0",
+        "correct": false,
+        "explanation": "This solution has an error in calculating the length of the subarray. The correct length is (right - left + 1), not (right - left)."
+      }
+    ]
+  },
+  {
+    "problemTitle": "22. Generate Parentheses",
+    "problemStatement": "Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.\n\nExample 1:\nInput: n = 3\nOutput: [\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]\n\nExample 2:\nInput: n = 1\nOutput: [\"()\"]\n\nConstraints:\n1 <= n <= 8\n\nSolution Approach:\nUse backtracking. Maintain counts of open and close parentheses. Add '(' if open < n. Add ')' if close < open. Base case: open == close == n.",
+    "codeSkeleton": "class Solution(object):\n    def generateParenthesis(self, n):\n        \"\"\"\n        :type n: int\n        :rtype: List[str]\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Backtracking approach\nres = []\nstack = [] # Use stack to build the current string\n\ndef backtrack(open_count, close_count):\n    # Base case: valid combination found\n    if open_count == close_count == n:\n        res.append(\"\".join(stack))\n        return\n    \n    # Add opening parenthesis if possible\n    if open_count < n:\n        stack.append('(')\n        backtrack(open_count + 1, close_count)\n        stack.pop() # Backtrack: remove the added parenthesis\n        \n    # Add closing parenthesis if valid\n    if close_count < open_count:\n        stack.append(')')\n        backtrack(open_count, close_count + 1)\n        stack.pop() # Backtrack\n\nbacktrack(0, 0)\nreturn res",
+        "correct": true,
+        "explanation": "This backtracking solution correctly explores possibilities. It adds '(' if the count is less than n, and adds ')' only if the number of closing parentheses is less than the number of open ones, ensuring well-formedness."
+      },
+      {
+        "text": "# Incorrect: Adds ')' even if close >= open\nres = []\nstack = []\n\ndef backtrack(open_count, close_count):\n    if open_count == close_count == n:\n        res.append(\"\".join(stack))\n        return\n    \n    if open_count < n:\n        stack.append('(')\n        backtrack(open_count + 1, close_count)\n        stack.pop()\n        \n    # Error: Allows adding ')' even when close_count >= open_count\n    if close_count < n: # Incorrect condition\n        stack.append(')')\n        backtrack(open_count, close_count + 1)\n        stack.pop()\n\nbacktrack(0, 0)\nreturn res",
+        "correct": false,
+        "explanation": "This solution incorrectly allows adding a closing parenthesis ')' as long as the total count is less than n, without checking if it maintains the well-formed property (close_count < open_count). This leads to invalid sequences like '))((()'."
+      },
+      {
+        "text": "# Incorrect: Doesn't backtrack (pop)\nres = []\nstack = []\n\ndef backtrack(open_count, close_count):\n    if open_count == close_count == n:\n        res.append(\"\".join(stack))\n        return\n    \n    if open_count < n:\n        stack.append('(')\n        backtrack(open_count + 1, close_count)\n        # Error: Missing stack.pop() for backtracking\n        \n    if close_count < open_count:\n        stack.append(')')\n        backtrack(open_count, close_count + 1)\n        # Error: Missing stack.pop() for backtracking\n\nbacktrack(0, 0)\nreturn res",
+        "correct": false,
+        "explanation": "This solution fails because it doesn't remove the character from the 'stack' after the recursive call returns (missing stack.pop()). This means subsequent recursive calls build upon an incorrect stack state, leading to wrong results."
+      },
+      {
+        "text": "# Incorrect: Base case check is wrong\nres = []\nstack = []\n\ndef backtrack(open_count, close_count):\n    # Error: Base case condition is insufficient (doesn't check close_count)\n    if open_count == n:\n        # This might add incomplete sequences like '((('\n        res.append(\"\".join(stack)) \n        return\n    \n    if open_count < n:\n        stack.append('(')\n        backtrack(open_count + 1, close_count)\n        stack.pop()\n        \n    if close_count < open_count:\n        stack.append(')')\n        backtrack(open_count, close_count + 1)\n        stack.pop()\n\nbacktrack(0, 0)\nreturn res",
+        "correct": false,
+        "explanation": "This solution has an incorrect base case. It stops adding to the result list as soon as open_count reaches n, without ensuring that close_count also reaches n. This leads to incomplete parenthesis sequences being added."
+      }
+    ]
+  },
+  {
+    "problemTitle": "875. Koko Eating Bananas",
+    "problemStatement": "Koko loves to eat bananas. There are n piles of bananas, where the ith pile has piles[i] bananas. The guards have gone and will come back in h hours.\n\nKoko can decide her bananas-per-hour eating speed of k. Each hour, she chooses some pile of bananas and eats k bananas from that pile. If the pile has less than k bananas, she eats all of them instead and will not eat any more bananas during this hour.\n\nKoko likes to eat slowly but still wants to finish eating all the bananas before the guards return.\n\nReturn the minimum integer k such that she can eat all the bananas within h hours.\n\nExample:\nInput: piles = [3, 6, 7, 11], h = 8\nOutput: 4\n\nConstraints:\n- 1 <= piles.length <= 10^4\n- piles.length <= h <= 10^9\n- 1 <= piles[i] <= 10^9",
+    "codeSkeleton": "def minEatingSpeed(piles, h):\n    # Your code here",
+    "choices": [
+      {
+        "text": "# Using binary search to find the minimum eating speed\nleft, right = 1, max(piles)\n\nwhile left < right:\n    mid = (left + right) // 2\n    hours_needed = 0\n    \n    for pile in piles:\n        hours_needed += (pile + mid - 1) // mid  # Ceiling division\n    \n    if hours_needed <= h:\n        right = mid\n    else:\n        left = mid + 1\n\nreturn left",
+        "correct": true,
+        "explanation": "This solution correctly uses binary search to find the minimum eating speed. The search space is from 1 to the maximum pile size. For each potential speed 'mid', it calculates the total hours needed using ceiling division. If the hours needed is less than or equal to h, we can potentially use a lower speed, so we update 'right = mid'. Otherwise, we need a higher speed, so we update 'left = mid + 1'. The algorithm stops when left and right converge, giving the minimum valid speed."
+      },
+      {
+        "text": "# Brute force approach to find minimum eating speed\nfor k in range(1, max(piles) + 1):\n    hours_needed = 0\n    \n    for pile in piles:\n        hours_needed += (pile + k - 1) // k  # Ceiling division\n    \n    if hours_needed <= h:\n        return k\n\nreturn max(piles)",
+        "correct": false,
+        "explanation": "While this solution is correct in principle, it's inefficient for large inputs. It tries every possible eating speed from 1 to the maximum pile size, which can be up to 10^9 according to the constraints. This would result in a time limit exceeded error for large inputs. A more efficient approach like binary search should be used."
+      },
+      {
+        "text": "# Using binary search but with incorrect condition\nleft, right = 1, max(piles)\n\nwhile left < right:\n    mid = (left + right) // 2\n    hours_needed = 0\n    \n    for pile in piles:\n        # Error: Using integer division instead of ceiling division\n        hours_needed += pile // mid\n    \n    if hours_needed <= h:\n        right = mid\n    else:\n        left = mid + 1\n\nreturn left",
+        "correct": false,
+        "explanation": "This solution has an error in calculating the hours needed. It uses integer division (pile // mid) instead of ceiling division. This can lead to an incorrect calculation because if Koko can't finish a pile in one hour, she needs to spend an extra hour to finish it. For example, if a pile has 10 bananas and the eating speed is 3, it would take 4 hours (not 3.33 hours), which is calculated as (10 + 3 - 1) // 3 = 4 with ceiling division."
+      },
+      {
+        "text": "# Binary search with incorrect update logic\nleft, right = 1, max(piles)\n\nwhile left < right:\n    mid = (left + right) // 2\n    hours_needed = 0\n    \n    for pile in piles:\n        hours_needed += (pile + mid - 1) // mid\n    \n    # Error: Incorrect binary search update logic\n    if hours_needed < h:  # Should be <= h\n        right = mid\n    else:\n        left = mid + 1\n\nreturn left",
+        "correct": false,
+        "explanation": "This solution has an error in the binary search update logic. It checks if hours_needed < h instead of hours_needed <= h. This means if hours_needed equals h exactly, it will incorrectly increase the left pointer, potentially missing the optimal solution when hours_needed is exactly h."
+      }
+    ]
+  },
+  {
+    "problemTitle": "739. Daily Temperatures",
+    "problemStatement": "Given an array of integers temperatures represents the daily temperatures, return an array answer such that answer[i] is the number of days you have to wait after the ith day to get a warmer temperature. If there is no future day for which this is possible, keep answer[i] == 0 instead.\n\nExample 1:\nInput: temperatures = [73,74,75,71,69,72,76,73]\nOutput: [1,1,4,2,1,1,0,0]\n\nExample 2:\nInput: temperatures = [30,40,50,60]\nOutput: [1,1,1,0]\n\nConstraints:\n- 1 <= temperatures.length <= 10^5\n- 30 <= temperatures[i] <= 100",
+    "codeSkeleton": "function dailyTemperatures(temperatures) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Using a stack to track indices\nconst result = new Array(temperatures.length).fill(0);\nconst stack = [];\n\nfor (let i = 0; i < temperatures.length; i++) {\n    while (stack.length > 0 && temperatures[stack[stack.length - 1]] < temperatures[i]) {\n        const prevIndex = stack.pop();\n        result[prevIndex] = i - prevIndex;\n    }\n    \n    stack.push(i);\n}\n\nreturn result;",
+        "correct": true,
+        "explanation": "This solution correctly uses a stack to track indices. For each temperature, it compares with previously stored temperatures and calculates the number of days until a warmer temperature. It has O(n) time complexity since each index is pushed and popped at most once."
+      },
+      {
+        "text": "// Nested loop approach\nconst result = new Array(temperatures.length).fill(0);\n\nfor (let i = 0; i < temperatures.length; i++) {\n    for (let j = i + 1; j < temperatures.length; j++) {\n        if (temperatures[j] > temperatures[i]) {\n            result[i] = j - i;\n            break;\n        }\n    }\n}\n\nreturn result;",
+        "correct": false,
+        "explanation": "While this solution is correct, it uses a nested loop approach which results in O(n²) time complexity. This would time out for large input arrays. The stack-based approach is more efficient."
+      },
+      {
+        "text": "// Using a stack but with incorrect logic\nconst result = new Array(temperatures.length).fill(0);\nconst stack = [];\n\nfor (let i = 0; i < temperatures.length; i++) {\n    while (stack.length > 0 && temperatures[stack[stack.length - 1]] < temperatures[i]) {\n        const prevIndex = stack.pop();\n        // Error: Adding 1 instead of calculating the actual difference\n        result[prevIndex] = 1;\n    }\n    \n    stack.push(i);\n}\n\nreturn result;",
+        "correct": false,
+        "explanation": "This solution incorrectly sets the value to 1 instead of calculating the actual number of days (i - prevIndex). It will produce incorrect results when the warmer day is more than 1 day away."
+      },
+      {
+        "text": "// Using a stack but processing in reverse order\nconst result = new Array(temperatures.length).fill(0);\nconst stack = [];\n\nfor (let i = temperatures.length - 1; i >= 0; i--) {\n    while (stack.length > 0 && temperatures[stack[stack.length - 1]] <= temperatures[i]) {\n        stack.pop();\n    }\n    \n    if (stack.length > 0) {\n        result[i] = stack[stack.length - 1] - i;\n    }\n    \n    stack.push(i);\n}\n\nreturn result;",
+        "correct": false,
+        "explanation": "This approach processes temperatures in reverse order, which works for finding the next greater element. However, it has a logic error in the comparison (using <= instead of <) and in how it maintains the stack, causing incorrect results in some cases."
+      }
+    ]
+  },
+  {
+    "problemTitle": "21. Merge Two Sorted Lists",
+    "problemStatement": "You are given the heads of two sorted linked lists list1 and list2. Merge the two lists in a one sorted list. The list should be made by splicing together the nodes of the first two lists.\n\nReturn the head of the merged linked list.\n\nExample 1:\nInput: list1 = [1,2,4], list2 = [1,3,4]\nOutput: [1,1,2,3,4,4]\n\nExample 2:\nInput: list1 = [], list2 = []\nOutput: []\n\nExample 3:\nInput: list1 = [], list2 = [0]\nOutput: [0]\n\nConstraints:\n- The number of nodes in both lists is in the range [0, 50].\n- -100 <= Node.val <= 100\n- Both list1 and list2 are sorted in non-decreasing order.",
+    "codeSkeleton": "/**\n * Definition for singly-linked list.\n * function ListNode(val, next) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.next = (next===undefined ? null : next)\n * }\n */\n\nfunction mergeTwoLists(list1, list2) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Iterative approach with dummy head\nconst dummy = new ListNode(-1);\nlet current = dummy;\n\nwhile (list1 !== null && list2 !== null) {\n    if (list1.val <= list2.val) {\n        current.next = list1;\n        list1 = list1.next;\n    } else {\n        current.next = list2;\n        list2 = list2.next;\n    }\n    current = current.next;\n}\n\n// Attach remaining nodes\nif (list1 !== null) {\n    current.next = list1;\n} else {\n    current.next = list2;\n}\n\nreturn dummy.next;",
+        "correct": true,
+        "explanation": "This solution correctly merges two sorted linked lists iteratively. It uses a dummy head to simplify edge cases and iterates through both lists, always choosing the smaller value. Once one list is exhausted, it attaches the remainder of the other list. The time complexity is O(n+m) where n and m are the lengths of the lists."
+      },
+      {
+        "text": "// Recursive approach\nif (list1 === null) {\n    return list2;\n}\nif (list2 === null) {\n    return list1;\n}\n\nif (list1.val < list2.val) {\n    list1.next = mergeTwoLists(list1.next, list2);\n    return list1;\n} else {\n    list2.next = mergeTwoLists(list1, list2.next);\n    return list2;\n}",
+        "correct": false,
+        "explanation": "This solution uses a correct recursive approach, but has a bug in the comparison logic. It should be (list1.val <= list2.val) to maintain the stability of the merge, ensuring that equal values from list1 come before those from list2. This can lead to incorrect ordering when there are duplicate values."
+      },
+      {
+        "text": "// Using an array to merge and then creating a new list\nconst values = [];\n\n// Extract all values\nwhile (list1 !== null) {\n    values.push(list1.val);\n    list1 = list1.next;\n}\n\nwhile (list2 !== null) {\n    values.push(list2.val);\n    list2 = list2.next;\n}\n\n// Sort values\nvalues.sort((a, b) => a - b);\n\n// Create new linked list\nconst dummy = new ListNode(-1);\nlet current = dummy;\n\nfor (const val of values) {\n    current.next = new ListNode(val);\n    current = current.next;\n}\n\nreturn dummy.next;",
+        "correct": false,
+        "explanation": "This solution is inefficient because it extracts all values into an array, sorts them, and then creates a new list. It doesn't take advantage of the fact that the input lists are already sorted. The time complexity is O((n+m)log(n+m)) due to the sorting operation, which is worse than the optimal O(n+m)."
+      },
+      {
+        "text": "// Incorrect merge logic\nif (!list1) return list2;\nif (!list2) return list1;\n\nlet head = null;\nlet current = null;\n\nwhile (list1 && list2) {\n    if (list1.val <= list2.val) {\n        if (!head) {\n            head = list1;\n            current = list1;\n        } else {\n            current.next = list1;\n            current = current.next;\n        }\n        list1 = list1.next;\n    } else {\n        if (!head) {\n            head = list2;\n            current = list2;\n        } else {\n            current.next = list2;\n            current = current.next;\n        }\n        list2 = list2.next;\n    }\n}\n\n// Missing code to attach remaining nodes\n\nreturn head;",
+        "correct": false,
+        "explanation": "This solution has a critical flaw: it doesn't attach the remaining nodes from either list1 or list2 after one list is exhausted. This will result in a truncated list if one input list is shorter than the other. The merge logic itself is correct, but the missing final step makes this solution incomplete."
+      }
+    ]
+  },
+  {
+    "problemTitle": "226. Invert Binary Tree",
+    "problemStatement": "Given the root of a binary tree, invert the tree, and return its root.\n\nInverting a binary tree means swapping each node's left and right children. This effectively creates a mirror image of the original tree.\n\nExample:\nInput: root = [4,2,7,1,3,6,9]\nOutput: [4,7,2,9,6,3,1]\n\nConstraints:\nThe number of nodes in the tree is in the range [0, 100].\n-100 <= Node.val <= 100",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\n\nfunction invertTree(root) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Correct solution using recursive approach\nif (root === null) {\n    return null;\n}\n\n// Swap the left and right children\nconst temp = root.left;\nroot.left = root.right;\nroot.right = temp;\n\n// Recursively invert the left and right subtrees\ninvertTree(root.left);\ninvertTree(root.right);\n\nreturn root;",
+        "correct": true,
+        "explanation": "This solution correctly implements the invert binary tree operation by swapping each node's left and right children using a recursive approach. It properly handles the base case of a null node and returns the modified root."
+      },
+      {
+        "text": "// Incorrect: Using BFS but forgetting to recurse on children\nif (root === null) {\n    return null;\n}\n\n// Swap the left and right children\nconst temp = root.left;\nroot.left = root.right;\nroot.right = temp;\n\n// Missing recursive calls on children\n\nreturn root;",
+        "correct": false,
+        "explanation": "This solution only swaps the left and right children of the root node but doesn't recursively invert the subtrees. As a result, only the first level of the tree will be inverted while deeper levels remain unchanged."
+      },
+      {
+        "text": "// Incorrect: Wrong swapping logic\nif (root === null) {\n    return null;\n}\n\n// Incorrect swapping logic\nroot.left = invertTree(root.left);\nroot.right = invertTree(root.right);\n\n// Swapping happens after recursion, which is incorrect\nconst temp = root.left;\nroot.left = root.right;\nroot.right = temp;\n\nreturn root;",
+        "correct": false,
+        "explanation": "This solution has incorrect swapping logic. It first recursively inverts the subtrees and then swaps the already inverted children, which effectively negates the inversion of the subtrees."
+      },
+      {
+        "text": "// Incorrect: Only works for left subtree\nif (root === null) {\n    return null;\n}\n\n// Swap the left and right children\nconst temp = root.left;\nroot.left = root.right;\nroot.right = temp;\n\n// Only recurse on left subtree\ninvertTree(root.left);\n// Missing recursion on right subtree\n\nreturn root;",
+        "correct": false,
+        "explanation": "This solution only recursively inverts the left subtree but not the right subtree. Consequently, only part of the tree will be properly inverted."
+      }
+    ]
+  },
+  {
+    "problemTitle": "104. Maximum Depth of Binary Tree",
+    "problemStatement": "Given the root of a binary tree, return its maximum depth.\n\nA binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.\n\nExample:\nInput: root = [3,9,20,null,null,15,7]\nOutput: 3\n\nConstraints:\nThe number of nodes in the tree is in the range [0, 10^4].\n-100 <= Node.val <= 100",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\n\nfunction maxDepth(root) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Correct recursive solution\nif (root === null) {\n    return 0;\n}\n\n// Calculate the maximum depth of both subtrees\nconst leftDepth = maxDepth(root.left);\nconst rightDepth = maxDepth(root.right);\n\n// Return the larger depth plus 1 for the current node\nreturn 1 + Math.max(leftDepth, rightDepth);",
+        "correct": true,
+        "explanation": "This solution correctly calculates the maximum depth by recursively finding the depth of the left and right subtrees, then returning the maximum plus one for the current node. It properly handles the base case of a null node."
+      },
+      {
+        "text": "// Incorrect: Only counts right subtree\nif (root === null) {\n    return 0;\n}\n\n// Only consider right subtree depth\nconst rightDepth = maxDepth(root.right);\n\n// Ignore left subtree which is incorrect\nreturn 1 + rightDepth;",
+        "correct": false,
+        "explanation": "This solution incorrectly calculates the maximum depth by only considering the right subtree and ignoring the left subtree. This will give incorrect results when the left subtree is deeper than the right subtree."
+      },
+      {
+        "text": "// Incorrect: Returns sum instead of maximum\nif (root === null) {\n    return 0;\n}\n\n// Calculate depths of both subtrees\nconst leftDepth = maxDepth(root.left);\nconst rightDepth = maxDepth(root.right);\n\n// Incorrectly returns sum instead of maximum\nreturn 1 + leftDepth + rightDepth;",
+        "correct": false,
+        "explanation": "This solution incorrectly returns the sum of the depths of both subtrees plus 1, rather than the maximum depth. The maximum depth should be 1 plus the maximum of the left and right subtree depths."
+      },
+      {
+        "text": "// Incorrect: Does not add 1 for the current node\nif (root === null) {\n    return 0;\n}\n\n// Calculate depths of both subtrees\nconst leftDepth = maxDepth(root.left);\nconst rightDepth = maxDepth(root.right);\n\n// Forgot to add 1 for the current node\nreturn Math.max(leftDepth, rightDepth);",
+        "correct": false,
+        "explanation": "This solution correctly finds the maximum depth between the left and right subtrees but fails to add 1 for the current node. The depth should include the current node in the count."
+      }
+    ]
+  },
+  {
+    "problemTitle": "101. Symmetric Tree",
+    "problemStatement": "Given the root of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).\n\nExample:\nInput: root = [1,2,2,3,4,4,3]\nOutput: true\nExplanation: The tree is symmetric because its left and right subtrees are mirror reflections of each other.\n\nIn this problem, a binary tree is symmetric if the left subtree is a mirror reflection of the right subtree.",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\n\nfunction isSymmetric(root) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Correct recursive solution\nfunction isSymmetric(root) {\n    // Helper function to check if two trees are mirrors of each other\n    function isMirror(t1, t2) {\n        // If both trees are empty, they are mirrors\n        if (t1 === null && t2 === null) return true;\n        \n        // If only one is empty, they are not mirrors\n        if (t1 === null || t2 === null) return false;\n        \n        // Check if root values are equal and subtrees are mirrors\n        return t1.val === t2.val && \n               isMirror(t1.left, t2.right) && \n               isMirror(t1.right, t2.left);\n    }\n    \n    // Edge case: empty tree is symmetric\n    if (root === null) return true;\n    \n    // Check if left and right subtrees are mirrors\n    return isMirror(root.left, root.right);\n}",
+        "correct": true,
+        "explanation": "This solution correctly checks if the tree is symmetric by using a recursive helper function. It compares the left subtree with the right subtree as mirror images."
+      },
+      {
+        "text": "// Incorrect: Compares left subtree with left subtree\nfunction isSymmetric(root) {\n    function isMirror(t1, t2) {\n        if (t1 === null && t2 === null) return true;\n        if (t1 === null || t2 === null) return false;\n        \n        // Error: Comparing left with left and right with right\n        return t1.val === t2.val && \n               isMirror(t1.left, t2.left) && \n               isMirror(t1.right, t2.right);\n    }\n    \n    if (root === null) return true;\n    return isMirror(root.left, root.right);\n}",
+        "correct": false,
+        "explanation": "This solution is incorrect because it doesn't check for mirror symmetry. It compares the left subtree of one node with the left subtree of another, which checks for equality, not symmetry."
+      },
+      {
+        "text": "// Incorrect: Only checks node values, not structure\nfunction isSymmetric(root) {\n    if (root === null) return true;\n    \n    // Get all values in left and right subtrees\n    const leftValues = [];\n    const rightValues = [];\n    \n    function traverseLeft(node) {\n        if (node === null) {\n            leftValues.push(null);\n            return;\n        }\n        leftValues.push(node.val);\n        traverseLeft(node.left);\n        traverseLeft(node.right);\n    }\n    \n    function traverseRight(node) {\n        if (node === null) {\n            rightValues.push(null);\n            return;\n        }\n        rightValues.push(node.val);\n        traverseRight(node.right); // Error: Should mirror the traversal\n        traverseRight(node.left);  // Error: Should mirror the traversal\n    }\n    \n    traverseLeft(root.left);\n    traverseRight(root.right);\n    \n    // Error: Just checking array length doesn't confirm symmetry\n    return leftValues.length === rightValues.length;\n}",
+        "correct": false,
+        "explanation": "This solution is flawed in multiple ways. It only checks if the arrays are of the same length, not if they contain the same values. Also, the traversal order doesn't properly check for symmetry."
+      },
+      {
+        "text": "// Incorrect: Misunderstands what symmetry means\nfunction isSymmetric(root) {\n    // Helper function to check if a tree is symmetric\n    function checkSymmetry(node) {\n        if (node === null) return true;\n        \n        // Error: This just checks if left and right children are same, not if entire subtrees are mirrors\n        if (node.left === null && node.right === null) return true;\n        if (node.left === null || node.right === null) return false;\n        if (node.left.val !== node.right.val) return false;\n        \n        return checkSymmetry(node.left) && checkSymmetry(node.right);\n    }\n    \n    if (root === null) return true;\n    return checkSymmetry(root);\n}",
+        "correct": false,
+        "explanation": "This solution misunderstands the problem. It checks if each node's left and right children have the same value, not if the entire left subtree is a mirror of the right subtree."
+      }
+    ]
+  },
+  {
+    "problemTitle": "100. Same Tree",
+    "problemStatement": "Given the roots of two binary trees p and q, write a function to check if they are the same or not. Two binary trees are considered the same if they are structurally identical, and the nodes have the same value.\n\nExample:\nInput: p = [1,2,3], q = [1,2,3]\nOutput: true\n\nInput: p = [1,2], q = [1,null,2]\nOutput: false",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction isSameTree(p, q) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only checks node values without checking structure",
+            "code": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val;\n}",
+            "correct": false,
+            "explanation": "This solution only checks if the current nodes have the same value but doesn't verify the structure of the subtrees."
+        },
+        {
+            "text": "Correct: Recursively checks both structure and values",
+            "code": "function isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "correct": true,
+            "explanation": "This solution correctly checks both the structure and values by recursively comparing left and right subtrees."
+        },
+        {
+            "text": "Incorrect: Doesn't handle null nodes properly",
+            "code": "function isSameTree(p, q) {\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "correct": false,
+            "explanation": "This solution will fail when either p or q is null because it tries to access .val on null."
+        }
+    ]
+},
+{
+    "problemTitle": "102. Binary Tree Level Order Traversal",
+    "problemStatement": "Given the root of a binary tree, return the level order traversal of its nodes' values (i.e., from left to right, level by level).\n\nExample:\nInput: root = [3,9,20,null,null,15,7]\nOutput: [[3],[9,20],[15,7]]\n\nConstraints:\n- The number of nodes in the tree is in the range [0, 2000]\n- -1000 <= Node.val <= 1000",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction levelOrder(root) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only returns values without level separation",
+            "code": "function levelOrder(root) {\n    if (!root) return [];\n    const result = [];\n    const queue = [root];\n    \n    while (queue.length) {\n        const node = queue.shift();\n        result.push(node.val);\n        if (node.left) queue.push(node.left);\n        if (node.right) queue.push(node.right);\n    }\n    return result;\n}",
+            "correct": false,
+            "explanation": "This solution performs a level order traversal but fails to group nodes by their levels. It returns a flat array instead of an array of arrays where each inner array represents a level."
+        },
+        {
+            "text": "Correct: Uses BFS with level tracking",
+            "code": "function levelOrder(root) {\n    if (!root) return [];\n    const result = [];\n    const queue = [root];\n    \n    while (queue.length) {\n        const levelSize = queue.length;\n        const currentLevel = [];\n        \n        for (let i = 0; i < levelSize; i++) {\n            const node = queue.shift();\n            currentLevel.push(node.val);\n            if (node.left) queue.push(node.left);\n            if (node.right) queue.push(node.right);\n        }\n        result.push(currentLevel);\n    }\n    return result;\n}",
+            "correct": true,
+            "explanation": "This solution correctly uses BFS to traverse the tree level by level, keeping track of each level's size to properly group nodes by their levels in the result array."
+        },
+        {
+            "text": "Incorrect: Uses DFS instead of BFS",
+            "code": "function levelOrder(root) {\n    const result = [];\n    \n    function dfs(node, level) {\n        if (!node) return;\n        if (!result[level]) result[level] = [];\n        result[level].push(node.val);\n        dfs(node.left, level + 1);\n        dfs(node.right, level + 1);\n    }\n    \n    dfs(root, 0);\n    return result;\n}",
+            "correct": false,
+            "explanation": "While this solution produces the correct output, it uses DFS which is less intuitive and efficient for level-order traversal. BFS is the natural choice for traversing a tree level by level."
+        }
+    ]
+},
+{
+    "problemTitle": "572. Subtree of Another Tree",
+    "problemStatement": "Given the roots of two binary trees root and subRoot, return true if there is a subtree of root with the same structure and node values of subRoot and false otherwise.\n\nA subtree of a binary tree is a tree that consists of a node in the tree and all of this node's descendants. The tree could also be considered as a subtree of itself.\n\nExample 1:\nInput: root = [3,4,5,1,2], subRoot = [4,1,2]\nOutput: true\n\nExample 2:\nInput: root = [3,4,5,1,2,null,null,null,null,0], subRoot = [4,1,2]\nOutput: false",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction isSubtree(root, subRoot) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only checks node values without checking structure",
+            "code": "function isSubtree(root, subRoot) {\n    if (!root || !subRoot) return !subRoot;\n    return root.val === subRoot.val || \n           isSubtree(root.left, subRoot) || \n           isSubtree(root.right, subRoot);\n}",
+            "correct": false,
+            "explanation": "This solution only checks if node values match but doesn't verify the entire structure matches. It would return true for cases where only values match but structure differs."
+        },
+        {
+            "text": "Incorrect: Doesn't handle null cases properly",
+            "code": "function isSubtree(root, subRoot) {\n    if (root.val === subRoot.val) {\n        return isSameTree(root, subRoot);\n    }\n    return isSubtree(root.left, subRoot) || \n           isSubtree(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "correct": false,
+            "explanation": "This solution doesn't handle the case where root is null, which would cause a runtime error when trying to access root.val."
+        },
+        {
+            "text": "Correct solution using recursive comparison",
+            "code": "function isSubtree(root, subRoot) {\n    if (!root) return false;\n    if (isSameTree(root, subRoot)) return true;\n    return isSubtree(root.left, subRoot) || \n           isSubtree(root.right, subRoot);\n}\n\nfunction isSameTree(p, q) {\n    if (!p && !q) return true;\n    if (!p || !q) return false;\n    return p.val === q.val && \n           isSameTree(p.left, q.left) && \n           isSameTree(p.right, q.right);\n}",
+            "correct": true,
+            "explanation": "This solution correctly handles all cases by recursively comparing trees and checking both structure and values."
+        }
+    ]
+},
+{
+    "problemTitle": "235. Lowest Common Ancestor of a Binary Search Tree",
+    "problemStatement": "Given a binary search tree (BST), find the lowest common ancestor (LCA) of two given nodes in the BST. The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).\n\nExample 1:\nInput: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8\nOutput: 6\nExplanation: The LCA of nodes 2 and 8 is 6.\n\nExample 2:\nInput: root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 4\nOutput: 2\nExplanation: The LCA of nodes 2 and 4 is 2, since a node can be a descendant of itself according to the LCA definition.",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val) {\n *     this.val = val;\n *     this.left = this.right = null;\n * }\n */\nfunction lowestCommonAncestor(root, p, q) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only checks node values without considering BST property",
+            "code": "function lowestCommonAncestor(root, p, q) {\n    if (!root) return null;\n    if (root === p || root === q) return root;\n    let left = lowestCommonAncestor(root.left, p, q);\n    let right = lowestCommonAncestor(root.right, p, q);\n    return left && right ? root : left || right;\n}",
+            "correct": false,
+            "explanation": "This solution treats the tree as a regular binary tree and doesn't utilize the BST property, leading to unnecessary traversals."
+        },
+        {
+            "text": "Incorrect: Doesn't handle the case where one node is ancestor of another",
+            "code": "function lowestCommonAncestor(root, p, q) {\n    while (root) {\n        if (root.val < p.val && root.val < q.val)\n            root = root.right;\n        else if (root.val > p.val && root.val > q.val)\n            root = root.left;\n        else if (root.val === p.val || root.val === q.val)\n            return null;\n        else\n            return root;\n    }\n    return null;\n}",
+            "correct": false,
+            "explanation": "This solution incorrectly returns null when finding one of the nodes, but according to the problem, a node can be a descendant of itself."
+        },
+        {
+            "text": "Correct solution using BST properties",
+            "code": "function lowestCommonAncestor(root, p, q) {\n    while (root) {\n        if (root.val < Math.min(p.val, q.val))\n            root = root.right;\n        else if (root.val > Math.max(p.val, q.val))\n            root = root.left;\n        else\n            return root;\n    }\n    return null;\n}",
+            "correct": true,
+            "explanation": "This solution efficiently uses BST properties to find the LCA by comparing values and moving left or right accordingly. It handles all cases including when one node is an ancestor of another."
+        }
+    ]
+},
+{
+    "problemTitle": "199. Binary Tree Right Side View",
+    "problemStatement": "Given a binary tree, imagine yourself standing on the right side of it, return the values of the nodes you can see ordered from top to bottom.\n\nExample:\nInput: [1,2,3,null,5,null,4]\nOutput: [1,3,4]\nExplanation:\n   1            <---\n /   \\\n2     3         <---\n \\     \\\n  5     4       <---\n\nYou should return [1,3,4] as these are the nodes visible from the right side.",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction rightSideView(root) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only traverses right nodes",
+            "code": "function rightSideView(root) {\n    const result = [];\n    let node = root;\n    while (node) {\n        result.push(node.val);\n        node = node.right;\n    }\n    return result;\n}",
+            "correct": false,
+            "explanation": "This solution fails because it only considers right nodes, missing visible nodes from the left subtree when the right subtree is shorter."
+        },
+        {
+            "text": "Incorrect: Uses preorder traversal without level tracking",
+            "code": "function rightSideView(root) {\n    const result = [];\n    function dfs(node) {\n        if (!node) return;\n        result.push(node.val);\n        dfs(node.right);\n        dfs(node.left);\n    }\n    dfs(root);\n    return result;\n}",
+            "correct": false,
+            "explanation": "This solution fails because it doesn't track levels, so it may include nodes that aren't visible from the right side."
+        },
+        {
+            "text": "Correct solution using level-order traversal",
+            "code": "function rightSideView(root) {\n    const result = [];\n    if (!root) return result;\n    \n    const queue = [root];\n    while (queue.length > 0) {\n        const levelSize = queue.length;\n        result.push(queue[levelSize - 1].val);\n        \n        for (let i = 0; i < levelSize; i++) {\n            const node = queue.shift();\n            if (node.left) queue.push(node.left);\n            if (node.right) queue.push(node.right);\n        }\n    }\n    return result;\n}",
+            "correct": true,
+            "explanation": "This solution correctly uses level-order traversal to capture the rightmost node at each level, ensuring we get all nodes visible from the right side."
+        }
+    ]
+},
+{
+    "problemTitle": "98. Validate Binary Search Tree",
+    "problemStatement": "Given the root of a binary tree, determine if it is a valid binary search tree (BST). A valid BST is defined as follows:\n\n- The left subtree of a node contains only nodes with keys less than the node's key.\n- The right subtree of a node contains only nodes with keys greater than the node's key.\n- Both the left and right subtrees must also be binary search trees.\n\nExample 1:\nInput: root = [2,1,3]\nOutput: true\n\nExample 2:\nInput: root = [5,1,4,null,null,3,6]\nOutput: false\nExplanation: The root node's value is 5 but its right child's value is 4.",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction isValidBST(root) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only checks immediate children without considering entire subtrees",
+            "code": "function isValidBST(root) {\n    if (!root) return true;\n    \n    // Only checks immediate children\n    if (root.left && root.left.val >= root.val) return false;\n    if (root.right && root.right.val <= root.val) return false;\n    \n    return isValidBST(root.left) && isValidBST(root.right);\n}",
+            "correct": false,
+            "explanation": "This solution fails because it only checks the immediate children of each node, not the entire subtrees. A node's value must be greater than ALL values in its left subtree and less than ALL values in its right subtree."
+        },
+        {
+            "text": "Correct: Uses in-order traversal with value tracking",
+            "code": "function isValidBST(root) {\n    let prev = -Infinity;\n    \n    function inorder(node) {\n        if (!node) return true;\n        \n        if (!inorder(node.left)) return false;\n        \n        if (node.val <= prev) return false;\n        prev = node.val;\n        \n        return inorder(node.right);\n    }\n    \n    return inorder(root);\n}",
+            "correct": true,
+            "explanation": "This solution correctly uses in-order traversal to validate the BST. It maintains a 'prev' variable to track the last visited value, ensuring that values are strictly increasing during the traversal."
+        },
+        {
+            "text": "Incorrect: Doesn't handle edge cases with duplicate values",
+            "code": "function isValidBST(root) {\n    function validate(node, min, max) {\n        if (!node) return true;\n        if (node.val < min || node.val > max) return false;\n        \n        return validate(node.left, min, node.val) && \n               validate(node.right, node.val, max);\n    }\n    \n    return validate(root, -Infinity, Infinity);\n}",
+            "correct": false,
+            "explanation": "This solution fails to handle duplicate values correctly. In a BST, values must be strictly less than (not equal to) for left subtree and strictly greater than (not equal to) for right subtree."
+        }
+    ]
+},
+{
+    "problemTitle": "230. Kth Smallest Element in a BST",
+    "problemStatement": "Given the root of a binary search tree and an integer k, return the kth smallest value (1-indexed) of all the values of the nodes in the tree.\n\nExample 1:\nInput: root = [3,1,4,null,2], k = 1\nOutput: 1\n\nExample 2:\nInput: root = [5,3,6,2,4,null,null,1], k = 3\nOutput: 3",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction kthSmallest(root, k) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only traverses left subtree",
+            "code": "function kthSmallest(root, k) {\n    let count = 0;\n    let result = null;\n    \n    function traverse(node) {\n        if (!node || result !== null) return;\n        traverse(node.left);\n        count++;\n        if (count === k) {\n            result = node.val;\n            return;\n        }\n        // Error: Missing right subtree traversal\n    }\n    \n    traverse(root);\n    return result;\n}",
+            "correct": false,
+            "explanation": "This solution only traverses the left subtree, missing potential kth smallest elements in the right subtree."
+        },
+        {
+            "text": "Incorrect: Uses array to store all values",
+            "code": "function kthSmallest(root, k) {\n    const values = [];\n    \n    function inorder(node) {\n        if (!node) return;\n        inorder(node.left);\n        values.push(node.val);\n        inorder(node.right);\n    }\n    \n    inorder(root);\n    return values[k-1];\n}",
+            "correct": false,
+            "explanation": "While this solution works, it uses O(n) extra space to store all values, which is unnecessary since we only need the kth element."
+        },
+        {
+            "text": "Correct: Iterative inorder traversal with counter",
+            "code": "function kthSmallest(root, k) {\n    const stack = [];\n    let curr = root;\n    \n    while (curr || stack.length) {\n        while (curr) {\n            stack.push(curr);\n            curr = curr.left;\n        }\n        curr = stack.pop();\n        if (--k === 0) {\n            return curr.val;\n        }\n        curr = curr.right;\n    }\n}",
+            "correct": true,
+            "explanation": "This solution uses iterative inorder traversal with a counter, maintaining O(h) space complexity where h is the height of the tree."
+        }
+    ]
+},
+{
+    "problemTitle": "105. Construct Binary Tree from Preorder and Inorder Traversal",
+    "problemStatement": "Given two integer arrays preorder and inorder where preorder is the preorder traversal of a binary tree and inorder is the inorder traversal of the same tree, construct and return the binary tree.\n\nExample:\nInput: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]\nOutput: [3,9,20,null,null,15,7]\n\nConstraints:\n- 1 <= preorder.length <= 3000\n- inorder.length == preorder.length\n- -3000 <= preorder[i], inorder[i] <= 3000\n- preorder and inorder consist of unique values\n- Each value of inorder also appears in preorder\n- preorder is guaranteed to be the preorder traversal of the tree\n- inorder is guaranteed to be the inorder traversal of the tree",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction buildTree(preorder, inorder) {\n    // Your code here\n}",
+    "choices": [
+        {
+            "text": "Incorrect: Only uses preorder traversal",
+            "code": "function buildTree(preorder, inorder) {\n    if (!preorder.length) return null;\n    const root = new TreeNode(preorder[0]);\n    root.left = buildTree(preorder.slice(1), inorder);\n    root.right = buildTree(preorder.slice(2), inorder);\n    return root;\n}",
+            "correct": false,
+            "explanation": "This solution incorrectly assumes the left and right subtrees can be determined from preorder traversal alone, ignoring the inorder traversal which is crucial for determining the correct structure."
+        },
+        {
+            "text": "Incorrect: Doesn't handle empty arrays",
+            "code": "function buildTree(preorder, inorder) {\n    const rootVal = preorder[0];\n    const root = new TreeNode(rootVal);\n    const rootIndex = inorder.indexOf(rootVal);\n    root.left = buildTree(preorder.slice(1), inorder.slice(0, rootIndex));\n    root.right = buildTree(preorder.slice(rootIndex + 1), inorder.slice(rootIndex + 1));\n    return root;\n}",
+            "correct": false,
+            "explanation": "This solution fails to handle the base case of empty arrays, which would cause an error when trying to access preorder[0] on an empty array."
+        },
+        {
+            "text": "Correct: Uses hash map for efficient index lookup",
+            "code": "function buildTree(preorder, inorder) {\n    const indexMap = new Map();\n    for (let i = 0; i < inorder.length; i++) {\n        indexMap.set(inorder[i], i);\n    }\n    \n    function buildSubTree(preStart, inStart, size) {\n        if (size <= 0) return null;\n        \n        const rootVal = preorder[preStart];\n        const root = new TreeNode(rootVal);\n        const rootIndex = indexMap.get(rootVal);\n        const leftSize = rootIndex - inStart;\n        \n        root.left = buildSubTree(preStart + 1, inStart, leftSize);\n        root.right = buildSubTree(preStart + leftSize + 1, rootIndex + 1, size - leftSize - 1);\n        \n        return root;\n    }\n    \n    return buildSubTree(0, 0, preorder.length);\n}",
+            "correct": true,
+            "explanation": "This solution efficiently uses a hash map to store inorder indices for O(1) lookup, and correctly handles the recursive construction of left and right subtrees based on both preorder and inorder traversals."
+        }
+    ]
+},
+{
+    "problemTitle": "124. Binary Tree Maximum Path Sum",
+    "problemStatement": "A path in a binary tree is a sequence of nodes where each pair of adjacent nodes in the sequence has an edge connecting them. A node can only appear in the sequence at most once. Note that the path does not need to pass through the root.\n\nThe path sum of a path is the sum of the node's values in the path.\n\nGiven the root of a binary tree, return the maximum path sum of any non-empty path.\n\nExample 1:\nInput: root = [1,2,3]\nOutput: 6\nExplanation: The optimal path is 2 -> 1 -> 3 with a path sum of 2 + 1 + 3 = 6.\n\nExample 2:\nInput: root = [-10,9,20,null,null,15,7]\nOutput: 42\nExplanation: The optimal path is 15 -> 20 -> 7 with a path sum of 15 + 20 + 7 = 42.\n\nConstraints:\n- The number of nodes in the tree is in the range [1, 3 * 104]\n- -1000 <= Node.val <= 1000",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\nfunction maxPathSum(root) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Correct solution using post-order traversal\nlet maxSum = -Infinity;\n\nfunction maxGain(node) {\n    if (!node) return 0;\n    \n    // Get the maximum path sum from left and right subtrees\n    // Note: we take max with 0 because we can choose not to include a path\n    const leftGain = Math.max(0, maxGain(node.left));\n    const rightGain = Math.max(0, maxGain(node.right));\n    \n    // Current path sum including both children\n    const currentPathSum = node.val + leftGain + rightGain;\n    \n    // Update global maximum if current path is better\n    maxSum = Math.max(maxSum, currentPathSum);\n    \n    // Return maximum sum of path that can be extended by parent node\n    return node.val + Math.max(leftGain, rightGain);\n}\n\nmaxGain(root);\nreturn maxSum;",
+        "correct": true,
+        "explanation": "This solution correctly handles all cases by using post-order traversal. For each node, it calculates the maximum gain that can be obtained by including that node and optionally one of its subtrees. It also updates a global maximum that considers paths that include both subtrees."
+      },
+      {
+        "text": "// Incorrect: Only considers paths through root\nfunction maxGain(node) {\n    if (!node) return 0;\n    \n    const leftGain = maxGain(node.left);\n    const rightGain = maxGain(node.right);\n    \n    return node.val + Math.max(leftGain, rightGain, 0);\n}\n\nreturn maxGain(root);",
+        "correct": false,
+        "explanation": "This solution is incorrect because it only considers paths that must end at leaves and start from the root. It fails to find paths that don't go through the root or paths that use both left and right subtrees."
+      },
+      {
+        "text": "// Incorrect: Doesn't handle negative values properly\nlet maxSum = -Infinity;\n\nfunction maxGain(node) {\n    if (!node) return 0;\n    \n    const leftGain = maxGain(node.left);\n    const rightGain = maxGain(node.right);\n    \n    // Error: Doesn't consider that we might want to exclude negative paths\n    const currentPathSum = node.val + leftGain + rightGain;\n    maxSum = Math.max(maxSum, currentPathSum);\n    \n    return node.val + Math.max(leftGain, rightGain);\n}\n\nmaxGain(root);\nreturn maxSum;",
+        "correct": false,
+        "explanation": "This solution fails to handle negative values correctly because it doesn't consider that we might want to exclude negative paths entirely. It should take Math.max(0, gain) when considering paths to include."
+      },
+      {
+        "text": "// Incorrect: Tries to find longest path instead of maximum sum\nlet maxLength = 0;\n\nfunction findLongestPath(node, length) {\n    if (!node) return;\n    \n    maxLength = Math.max(maxLength, length);\n    \n    findLongestPath(node.left, length + 1);\n    findLongestPath(node.right, length + 1);\n}\n\nfindLongestPath(root, 1);\nreturn maxLength;",
+        "correct": false,
+        "explanation": "This solution completely misses the point of the problem. It finds the longest path in terms of number of nodes, rather than the path with the maximum sum. It doesn't consider node values at all."
+      }
+    ]
+  },
+  {
+    "problemTitle": "297. Serialize and Deserialize Binary Tree",
+    "problemStatement": "Serialization is the process of converting a data structure or object into a sequence of bits so that it can be stored in a file or memory buffer, or transmitted across a network connection link to be reconstructed later in the same or another computer environment.\n\nDesign an algorithm to serialize and deserialize a binary tree. There is no restriction on how your serialization/deserialization algorithm should work. You just need to ensure that a binary tree can be serialized to a string and this string can be deserialized to the original tree structure.\n\nExample 1:\nInput: root = [1,2,3,null,null,4,5]\nOutput: [1,2,3,null,null,4,5]\nExplanation: The input and output are the same binary tree, where:\n   1\n  / \\\\\n 2   3\n    / \\\\\n   4   5\n\nExample 2:\nInput: root = []\nOutput: []\n\nConstraints:\n- The number of nodes in the tree is in the range [0, 104]\n- -1000 <= Node.val <= 1000",
+    "codeSkeleton": "/**\n * Definition for a binary tree node.\n * function TreeNode(val) {\n *     this.val = val;\n *     this.left = this.right = null;\n * }\n */\n\n/**\n * Encodes a tree to a single string.\n *\n * @param {TreeNode} root\n * @return {string}\n */\nfunction serialize(root) {\n    // Your code here\n}\n\n/**\n * Decodes your encoded data to tree.\n *\n * @param {string} data\n * @return {TreeNode}\n */\nfunction deserialize(data) {\n    // Your code here\n}",
+    "choices": [
+      {
+        "text": "// Correct solution using level-order traversal\nfunction serialize(root) {\n    if (!root) return '[]';\n    \n    const result = [];\n    const queue = [root];\n    \n    while (queue.length) {\n        const node = queue.shift();\n        if (node) {\n            result.push(node.val);\n            queue.push(node.left);\n            queue.push(node.right);\n        } else {\n            result.push(null);\n        }\n    }\n    \n    // Remove trailing nulls\n    while (result[result.length - 1] === null) {\n        result.pop();\n    }\n    \n    return JSON.stringify(result);\n}\n\nfunction deserialize(data) {\n    const values = JSON.parse(data);\n    if (!values.length) return null;\n    \n    const root = new TreeNode(values[0]);\n    const queue = [root];\n    let i = 1;\n    \n    while (queue.length && i < values.length) {\n        const node = queue.shift();\n        \n        // Left child\n        if (i < values.length && values[i] !== null) {\n            node.left = new TreeNode(values[i]);\n            queue.push(node.left);\n        }\n        i++;\n        \n        // Right child\n        if (i < values.length && values[i] !== null) {\n            node.right = new TreeNode(values[i]);\n            queue.push(node.right);\n        }\n        i++;\n    }\n    \n    return root;\n}",
+        "correct": true,
+        "explanation": "This solution correctly implements serialization and deserialization using level-order traversal. It handles all edge cases, including null nodes and empty trees. The serialization format is compact and human-readable, and the deserialization process correctly reconstructs the tree structure."
+      },
+      {
+        "text": "// Incorrect: Only stores node values without structure\nfunction serialize(root) {\n    const values = [];\n    function traverse(node) {\n        if (!node) return;\n        values.push(node.val);\n        traverse(node.left);\n        traverse(node.right);\n    }\n    traverse(root);\n    return JSON.stringify(values);\n}\n\nfunction deserialize(data) {\n    const values = JSON.parse(data);\n    if (!values.length) return null;\n    \n    // Error: Incorrectly assumes values can be inserted as BST\n    const root = new TreeNode(values[0]);\n    for (let i = 1; i < values.length; i++) {\n        insertIntoBST(root, values[i]);\n    }\n    return root;\n}\n\nfunction insertIntoBST(root, val) {\n    if (val < root.val) {\n        if (!root.left) root.left = new TreeNode(val);\n        else insertIntoBST(root.left, val);\n    } else {\n        if (!root.right) root.right = new TreeNode(val);\n        else insertIntoBST(root.right, val);\n    }\n}",
+        "correct": false,
+        "explanation": "This solution fails because it only stores node values without preserving the tree structure. It incorrectly assumes the tree is a BST during deserialization, which won't work for general binary trees."
+      },
+      {
+        "text": "// Incorrect: Doesn't handle null nodes\nfunction serialize(root) {\n    if (!root) return '[]';\n    \n    const result = [];\n    function preorder(node) {\n        if (!node) return;\n        result.push(node.val);\n        preorder(node.left);\n        preorder(node.right);\n    }\n    preorder(root);\n    return JSON.stringify(result);\n}\n\nfunction deserialize(data) {\n    const values = JSON.parse(data);\n    if (!values.length) return null;\n    \n    let i = 0;\n    function buildTree() {\n        if (i >= values.length) return null;\n        const node = new TreeNode(values[i++]);\n        node.left = buildTree();\n        node.right = buildTree();\n        return node;\n    }\n    \n    return buildTree();\n}",
+        "correct": false,
+        "explanation": "This solution fails because it doesn't encode null nodes, making it impossible to distinguish between different tree structures that have the same preorder traversal values."
+      },
+      {
+        "text": "// Incorrect: Uses invalid JSON format\nfunction serialize(root) {\n    if (!root) return '';\n    return `${root.val},${serialize(root.left)},${serialize(root.right)}`;\n}\n\nfunction deserialize(data) {\n    if (!data) return null;\n    \n    const values = data.split(',');\n    let i = 0;\n    \n    function buildTree() {\n        if (i >= values.length || !values[i]) return null;\n        const node = new TreeNode(parseInt(values[i++]));\n        node.left = buildTree();\n        node.right = buildTree();\n        return node;\n    }\n    \n    return buildTree();\n}",
+        "correct": false,
+        "explanation": "This solution uses an invalid format that can't handle certain values (like negative numbers or values containing commas). It also produces ambiguous serializations when empty strings are present in the split result."
+      }
+    ]
+  },
+  {
+    "problemTitle": "208. Implement Trie (Prefix Tree)",
+    "problemStatement": "A trie (pronounced as \"try\") or prefix tree is a tree data structure used to efficiently store and retrieve keys in a dataset of strings. There are various applications of this data structure, such as autocomplete and spellchecker.\\n\\nImplement the Trie class:\\n- Trie() Initializes the trie object.\\n- void insert(String word) Inserts the string word into the trie.\\n- boolean search(String word) Returns true if the string word is in the trie (i.e., was inserted before), and false otherwise.\\n- boolean startsWith(String prefix) Returns true if there is a previously inserted string word that has the prefix prefix, and false otherwise.\\n\\nExample 1:\\nInput:\\n[\"Trie\", \"insert\", \"search\", \"search\", \"startsWith\", \"insert\", \"search\"]\\n[[], [\"apple\"], [\"apple\"], [\"app\"], [\"app\"], [\"app\"], [\"app\"]]\\nOutput:\\n[null, null, true, false, true, null, true]\\n\\nConstraints:\\n- 1 <= word.length, prefix.length <= 2000\\n- word and prefix consist only of lowercase English letters.\\n- At most 3 * 10^4 calls in total will be made to insert, search, and startsWith.",
+    "codeSkeleton": "class TrieNode(object):\\n    def __init__(self):\\n        self.children = {}\\n        self.isEndOfWord = False\\n\\nclass Trie(object):\\n    def __init__(self):\\n        self.root = TrieNode()\\n\\n    def insert(self, word):\\n        \"\"\"\\n        Inserts a word into the trie.\\n        :type word: str\\n        :rtype: None\\n        \"\"\"\\n        # <MISSING CODE BLOCK>\\n\\n    def search(self, word):\\n        \"\"\"\\n        Returns if the word is in the trie.\\n        :type word: str\\n        :rtype: bool\\n        \"\"\"\\n        # <MISSING CODE BLOCK>\\n\\n    def startsWith(self, prefix):\\n        \"\"\"\\n        Returns if there is any word in the trie that starts with the given prefix.\\n        :type prefix: str\\n        :rtype: bool\\n        \"\"\"\\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Correct Implementation\\ndef insert(self, word):\\n    node = self.root\\n    for char in word:\\n        if char not in node.children:\\n            node.children[char] = TrieNode()\\n        node = node.children[char]\\n    node.isEndOfWord = True\\n\\ndef search(self, word):\\n    node = self.root\\n    for char in word:\\n        if char not in node.children:\\n            return False\\n        node = node.children[char]\\n    return node.isEndOfWord\\n\\ndef startsWith(self, prefix):\\n    node = self.root\\n    for char in prefix:\\n        if char not in node.children:\\n            return False\\n        node = node.children[char]\\n    return True",
+        "correct": true,
+        "explanation": "This is the standard and correct implementation. `insert` iterates through the word, creating nodes if they don't exist, and marks the final node as `isEndOfWord`. `search` traverses the path and checks `isEndOfWord` at the end. `startsWith` traverses the path and returns true if the path exists."
+      },
+      {
+        "text": "# Incorrect: Insert doesn\\'t create nodes\\n def insert(self, word):\\n    node = self.root\\n    for char in word:\\n        # Error: Fails if char not in children, should create node\\n        if char in node.children:\\n            node = node.children[char]\\n        else:\\n            return # Aborts insertion prematurely\\n    node.isEndOfWord = True\\n\\ndef search(self, word): # Assume search/startsWith are correct\\n    node = self.root\\n    for char in word:\\n        if char not in node.children: return False\\n        node = node.children[char]\\n    return node.isEndOfWord\\n\\ndef startsWith(self, prefix): # Assume search/startsWith are correct\\n    node = self.root\\n    for char in prefix:\\n        if char not in node.children: return False\\n        node = node.children[char]\\n    return True",
+        "correct": false,
+        "explanation": "This `insert` implementation is flawed because it doesn\\'t create new `TrieNode`s when a character is not found in the children. It simply stops the insertion process, preventing words from being fully added if their prefix isn\\'t already present."
+      },
+      {
+        "text": "# Incorrect: Search checks startsWith logic\\ndef insert(self, word): # Assume insert is correct\\n    node = self.root\\n    for char in word:\\n        if char not in node.children: node.children[char] = TrieNode()\\n        node = node.children[char]\\n    node.isEndOfWord = True\\n\\ndef search(self, word):\\n    node = self.root\\n    for char in word:\\n        if char not in node.children:\\n            return False\\n        node = node.children[char]\\n    # Error: Should check node.isEndOfWord, not just return True\\n    return True\\n\\ndef startsWith(self, prefix): # Assume startsWith is correct\\n    node = self.root\\n    for char in prefix:\\n        if char not in node.children: return False\\n        node = node.children[char]\\n    return True",
+        "correct": false,
+        "explanation": "This `search` implementation is incorrect because it only checks if the prefix exists (like `startsWith`), but it fails to check if the final node is marked as `isEndOfWord`. It would incorrectly return true for searching \"app\" after inserting only \"apple\"."
+      },
+      {
+        "text": "# Incorrect: startsWith checks search logic\\ndef insert(self, word): # Assume insert is correct\\n    node = self.root\\n    for char in word:\\n        if char not in node.children: node.children[char] = TrieNode()\\n        node = node.children[char]\\n    node.isEndOfWord = True\\n\\ndef search(self, word): # Assume search is correct\\n    node = self.root\\n    for char in word:\\n        if char not in node.children: return False\\n        node = node.children[char]\\n    return node.isEndOfWord\\n\\ndef startsWith(self, prefix):\\n    node = self.root\\n    for char in prefix:\\n        if char not in node.children:\\n            return False\\n        node = node.children[char]\\n    # Error: Should return True if prefix exists, but checks isEndOfWord\\n    return node.isEndOfWord",
+        "correct": false,
+        "explanation": "This `startsWith` implementation is incorrect because it checks `isEndOfWord` at the end of the prefix traversal. It should return true simply if the prefix path exists in the trie, regardless of whether that prefix itself forms a complete word."
+      }
+    ]
   }
-] 
+]
