@@ -1289,4 +1289,86 @@
       }
     ]
   }
+,
+  {
+    "problemTitle": "198. House Robber",
+    "problemStatement": "You are a professional robber planning to rob houses along a street. Each house has a certain amount of money. You cannot rob adjacent houses. Given an integer array nums representing the amount of money of each house, return the maximum amount you can rob tonight without alerting the police.",
+    "codeSkeleton": "class Solution(object):\n    def rob(self, nums):\n      \"\"\"\n        :type nums: List[int]\n        :rtype: int\n      \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Dynamic Programming O(n) time, O(1) space\nprev1 = 0\nprev2 = 0\nfor num in nums:\n    temp = prev1\n    prev1 = max(prev2 + num, prev1)\n    prev2 = temp\nreturn prev1",
+        "correct": true,
+        "explanation": "This uses two variables to track the best amounts up to the previous and the house before that. For each house you choose the max of robbing it plus prev2 or skipping it (prev1)."
+      },
+      {
+        "text": "# Recursive without memoization\nif not nums:\n    return 0\nif len(nums) == 1:\n    return nums[0]\nreturn max(self.rob(nums[1:]), nums[0] + self.rob(nums[2:]))",
+        "correct": false,
+        "explanation": "This approach is exponential because it recalculates subproblems without memoization."
+      },
+      {
+        "text": "# Incorrect DP relation\nif not nums:\n    return 0\nn = len(nums)\ndp = [0] * (n + 1)\ndp[1] = nums[0]\nfor i in range(2, n + 1):\n    dp[i] = dp[i-1] + nums[i-1]\nreturn dp[n]",
+        "correct": false,
+        "explanation": "This DP simply sums consecutive houses and ignores the no-adjacent constraint."
+      },
+      {
+        "text": "# Greedy pick even or odd indices\nsum_even = sum(nums[0::2])\nsum_odd = sum(nums[1::2])\nreturn max(sum_even, sum_odd)",
+        "correct": false,
+        "explanation": "Choosing only even or odd indices fails for cases where skipping a high value allows robbing two others for more profit."
+      }
+    ]
+  },
+  {
+    "problemTitle": "56. Merge Intervals",
+    "problemStatement": "Given an array of intervals where intervals[i] = [starti, endi], merge all overlapping intervals and return the non-overlapping intervals that cover all the intervals in the input.",
+    "codeSkeleton": "class Solution(object):\n    def merge(self, intervals):\n      \"\"\"\n        :type intervals: List[List[int]]\n        :rtype: List[List[int]]\n      \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Sort and merge\nintervals.sort(key=lambda x: x[0])\nmerged = [intervals[0]]\nfor start, end in intervals[1:]:\n    last_end = merged[-1][1]\n    if start <= last_end:\n        merged[-1][1] = max(last_end, end)\n    else:\n        merged.append([start, end])\nreturn merged",
+        "correct": true,
+        "explanation": "This sorts intervals by start then iterates once, merging whenever the current interval overlaps the previous one."
+      },
+      {
+        "text": "# Compare every pair\nintervals.sort(key=lambda x: x[0])\ni = 0\nwhile i < len(intervals) - 1:\n    j = i + 1\n    while j < len(intervals):\n        if intervals[i][1] >= intervals[j][0]:\n            intervals[i][1] = max(intervals[i][1], intervals[j][1])\n            intervals.pop(j)\n        else:\n            j += 1\n    i += 1\nreturn intervals",
+        "correct": false,
+        "explanation": "This works but is O(n^2) due to nested loops and repeated pops, so it is not optimal."
+      },
+      {
+        "text": "# Incorrect: Only sorts by end\nintervals.sort(key=lambda x: x[1])\nmerged = []\nfor start, end in intervals:\n    if not merged or start > merged[-1][1]:\n        merged.append([start, end])\n    else:\n        merged[-1][1] = end\nreturn merged",
+        "correct": false,
+        "explanation": "Sorting by end can merge intervals incorrectly when starts are unordered, leading to wrong results."
+      },
+      {
+        "text": "# Incorrect: Returns length only\nintervals.sort(key=lambda x: x[0])\ncount = 0\nprev_end = intervals[0][1]\nfor start, end in intervals[1:]:\n    if start <= prev_end:\n        prev_end = max(prev_end, end)\n    else:\n        count += 1\n        prev_end = end\nreturn count + 1",
+        "correct": false,
+        "explanation": "This counts merged intervals instead of returning the actual merged list."
+      }
+    ]
+  },
+  {
+    "problemTitle": "5. Longest Palindromic Substring",
+    "problemStatement": "Given a string s, return the longest palindromic substring in s.",
+    "codeSkeleton": "class Solution(object):\n    def longestPalindrome(self, s):\n      \"\"\"\n        :type s: str\n        :rtype: str\n      \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Expand around center\nres = ''\nfor i in range(len(s)):\n    for a, b in [(i, i), (i, i+1)]:\n        while a >= 0 and b < len(s) and s[a] == s[b]:\n            a -= 1\n            b += 1\n        if b - a - 1 > len(res):\n            res = s[a+1:b]\nreturn res",
+        "correct": true,
+        "explanation": "Checks all centers and expands outward. It keeps the longest substring found. Complexity is O(n^2)."
+      },
+      {
+        "text": "# Dynamic programming O(n^2) space\nn = len(s)\ndp = [[False]*n for _ in range(n)]\nres = s[0]\nfor i in range(n-1, -1, -1):\n    for j in range(i, n):\n        if s[i] == s[j] and (j - i < 2 or dp[i+1][j-1]):\n            dp[i][j] = True\n            if j - i + 1 > len(res):\n                res = s[i:j+1]\nreturn res",
+        "correct": false,
+        "explanation": "This is also correct but uses O(n^2) extra space. The optimal solution only needs constant space."
+      },
+      {
+        "text": "# Reverse string and find LCS\nrev = s[::-1]\n# Longest common substring of s and rev\nlongest = ''\nfor i in range(len(s)):\n    for j in range(len(rev)):\n        k = 0\n        while i+k < len(s) and j+k < len(rev) and s[i+k] == rev[j+k]:\n            if k+1 > len(longest):\n                longest = s[i:i+k+1]\n            k += 1\nreturn longest",
+        "correct": false,
+        "explanation": "LCS between s and its reverse fails because it doesn't enforce contiguous characters from the same positions in the original string."
+      },
+      {
+        "text": "# Brute force all substrings\nres = ''\nfor i in range(len(s)):\n    for j in range(i, len(s)):\n        sub = s[i:j+1]\n        if sub == sub[::-1] and len(sub) > len(res):\n            res = sub\nreturn res",
+        "correct": false,
+        "explanation": "This approach is correct but runs in O(n^3) time, which is too slow for n up to 1000."
+      }
+    ]
+  }
 ]
