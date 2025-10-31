@@ -1288,5 +1288,32 @@
         "explanation": "This `startsWith` implementation is incorrect because it checks `isEndOfWord` at the end of the prefix traversal. It should return true simply if the prefix path exists in the trie, regardless of whether that prefix itself forms a complete word."
       }
     ]
+  },
+  {
+    "problemTitle": "143. Reorder List",
+    "problemStatement": "You are given the head of a singly linked-list. The list can be represented as:\nL0 → L1 → … → Ln - 1 → Ln\n\nReorder the list to be on the following form:\nL0 → Ln → L1 → Ln - 1 → L2 → Ln - 2 → …\n\nYou may not modify the values in the list's nodes. Only nodes themselves may be changed.\n\nExample 1:\nInput: head = [1,2,3,4]\nOutput: [1,4,2,3]\n\nExample 2:\nInput: head = [1,2,3,4,5]\nOutput: [1,5,2,4,3]\n\nConstraints:\nThe number of nodes in the list is in the range [1, 5 * 10^4].\n1 <= Node.val <= 1000",
+    "codeSkeleton": "# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\nclass Solution:\n    def reorderList(self, head: ListNode) -> None:\n        \"\"\"\n        Do not return anything, modify head in-place instead.\n        \"\"\"\n        # <MISSING CODE BLOCK>",
+    "choices": [
+      {
+        "text": "# Store nodes in an array and reorder using two pointers\nnodes = []\n\n# Store all nodes in an array\ncurr = head\nwhile curr:\n    nodes.append(curr)\n    curr = curr.next\n\nleft, right = 0, len(nodes) - 1\n\n# Reorder the list by connecting nodes from outside in\nwhile left < right:\n    # Connect left to right\n    nodes[left].next = nodes[right]\n    left += 1\n    \n    # Break if pointers meet or cross\n    if left >= right:\n        break\n    \n    # Connect right to new left\n    nodes[right].next = nodes[left]\n    right -= 1\n\n# Make sure the last node points to None\nnodes[left].next = None",
+        "correct": true,
+        "explanation": "This approach correctly reorders the list by first storing all nodes in an array, then using two pointers (left and right) to relink the nodes in the required order. It preserves the original nodes and only changes their connections, as required by the problem. Time complexity is O(n), and space complexity is O(n) for the array."
+      },
+      {
+        "text": "# Find middle, reverse second half, and merge two lists\nif not head or not head.next:\n    return\n\n# Find the middle of the linked list\nslow, fast = head, head\nwhile fast and fast.next:\n    slow = slow.next\n    fast = fast.next.next\n\n# Reverse the second half\nprev, curr = None, slow\nwhile curr:\n    next_temp = curr.next\n    curr.next = prev\n    prev = curr\n    curr = next_temp\n\n# Merge the first half with reversed second half\nfirst, second = head, prev\nwhile second.next:\n    temp1, temp2 = first.next, second.next\n    first.next = second\n    second.next = temp1\n    first, second = temp1, temp2",
+        "correct": false,
+        "explanation": "This approach uses O(1) extra space by: 1) finding the middle of the list, 2) reversing the second half, and 3) merging the first half with the reversed second half. While correct, it's more complex than the array-based solution and easier to make mistakes in implementation."
+      },
+      {
+        "text": "# Incorrect: Only modifies values instead of reordering nodes\nvalues = []\n\n# Store all values\ncurr = head\nwhile curr:\n    values.append(curr.val)\n    curr = curr.next\n\n# Reorder values\nreordered = []\nfor i in range(len(values) // 2):\n    reordered.append(values[i])\n    reordered.append(values[len(values) - 1 - i])\n\n# Add middle element for odd length lists\nif len(values) % 2 == 1:\n    reordered.append(values[len(values) // 2])\n\n# Update list values\ncurr = head\nfor val in reordered:\n    curr.val = val\n    curr = curr.next",
+        "correct": false,
+        "explanation": "This solution incorrectly modifies the values of the nodes instead of changing the node connections. The problem specifically states 'You may not modify the values in the list's nodes. Only nodes themselves may be changed.'"
+      },
+      {
+        "text": "# Incorrect: Combines nodes incorrectly\nnodes = []\n\n# Store all nodes\ncurr = head\nwhile curr:\n    nodes.append(curr)\n    curr = curr.next\n\n# Incorrectly relinks nodes\nfor i in range(len(nodes) // 2):\n    # Error: Incorrect linking pattern\n    nodes[i].next = nodes[len(nodes) - 1 - i]\n    # Error: This creates cycles and doesn't follow the pattern\n    if i < len(nodes) // 2 - 1:\n        nodes[len(nodes) - 1 - i].next = nodes[i + 1]\n\n# Error: Doesn't properly handle list end\nif len(nodes) % 2 == 0:\n    nodes[len(nodes) // 2 - 1].next = None\nelse:\n    nodes[len(nodes) // 2].next = None",
+        "correct": false,
+        "explanation": "This solution incorrectly relinks the nodes, creating cycles and not following the required reordering pattern. It doesn't properly connect consecutive nodes from opposite ends and has errors in handling the end of the list."
+      }
+    ]
   }
 ]
