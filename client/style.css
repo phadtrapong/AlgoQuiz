@@ -1,0 +1,48 @@
+.quiz-container {
+    max-width: 900px; /* Slightly wider for desktop */
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.title-area {
+    display: flex;
+    align-items: center; /* Vertically align title and button */
+    justify-content: center; /* Center items */
+    gap: 20px; /* Space between title and button */
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow button to wrap on small screens */
+}
+
+h1 {
+    text-align: center;
+    /* margin-bottom: 20px; Removed margin, handled by title-area */
+    margin: 0; /* Remove default margin */
+    color: #333;
+    font-size: 1.8rem; /* Relative size */
+}
+
+/* Sponsor Button Style */
+.sponsor-button {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #f8f9fa; /* Light background */
+    color: #e83e8c; /* Pink/sponsor color */
+    border: 1px solid #e83e8c;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+.sponsor-button:hover {
+    background-color: #e83e8c;
+    color: white;
+}
+
+/* Style for Reset Button inside Question List tab */
+/* ... rest of styles ... */ 

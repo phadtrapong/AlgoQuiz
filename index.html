@@ -3,74 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Quiz</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <title>AlgoQuiz</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Link to Prism CSS from CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="quiz-container">
-        <h1>Coding Interview Quiz</h1>
+        <h1>AlgoQuiz: Blind 75 Practice</h1>
+
+        <div class="settings-panel" role="region" aria-label="Fun Mode settings">
+            <label class="settings-toggle" for="fun-mode-toggle">
+                <input type="checkbox" id="fun-mode-toggle" checked>
+                <span class="toggle-title">Fun Mode</span>
+            </label>
+            <label class="settings-toggle" for="sounds-toggle">
+                <input type="checkbox" id="sounds-toggle">
+                <span class="toggle-title">Sounds</span>
+            </label>
+            <label class="settings-toggle" for="reduced-motion-toggle">
+                <input type="checkbox" id="reduced-motion-toggle">
+                <span class="toggle-title">Reduced Motion</span>
+            </label>
+        </div>
+        
+        <!-- Reset Button REMOVED from Here -->
+        <!-- <button id="reset-progress-button">Reset Progress</button> -->
 
         <!-- Tab Navigation -->
         <div class="tab-navigation">
-            <button class="tab-button active" data-tab="quiz">Quiz</button>
+            <button class="tab-button active" data-tab="quiz-content">Quiz</button>
             <button class="tab-button" data-tab="question-list">Question List</button>
-            <button class="tab-button" data-tab="review">Review Progress</button>
+            <button class="tab-button" data-tab="review">Review</button>
         </div>
 
-        <!-- Quiz Tab Content -->
-        <div class="tab-content active" id="quiz-tab">
-            <!-- Progress Bar Area -->
+        <!-- Quiz Content Area -->
+        <div id="quiz-content" class="tab-content active">
+            <!-- Progress Bar -->
             <div class="progress-container">
-                <div id="progress-text"></div>
+                <div id="progress-text">Question 1/X</div>
                 <div class="progress-bar-container">
                     <div id="progress-bar-fill"></div>
                 </div>
             </div>
-            <!-- End Progress Bar Area -->
 
-            <div id="question-area">
-                <h2 id="problem-title"></h2>
-                <div id="problem-statement"></div>
-                <pre><code id="code-skeleton" class="language-python"></code></pre>
-                <p><strong># TODO: Choose the correct implementation below</strong></p>
+            <!-- Main Quiz Area (Now Flex/Grid Container) -->
+            <div id="question-area" class="quiz-layout">
+                <!-- Left Panel -->
+                <div id="left-panel">
+                    <div id="problem-statement">
+                        <!-- Problem statement will be loaded here -->
+                    </div>
+                    <pre id="code-skeleton"><code class="language-python">
+                        # Code skeleton will appear here
+                    </code></pre>
+                </div>
+
+                <!-- Right Panel -->
+                <div id="right-panel">
+                    <div id="choice-tabs">
+                        <!-- Choice tabs will be dynamically generated here -->
+                    </div>
+                    <div id="choice-details">
+                        <!-- Selected choice code snippet will appear here -->
+                        <div id="choices-placeholder">Select an answer tab above to see the code.</div>
+                    </div>
+                    <!-- Radio buttons might be hidden or integrated differently -->
+                    <form id="choices-area" style="display: none;"> <!-- Keep form for logic but hide visually -->
+                        <!-- Choices will be loaded here (hidden inputs?) -->
+                    </form>
+
+                    <!-- Moved Controls and Feedback Inside Right Panel -->
+                    <div id="feedback-area" style="display: none; margin-top: 15px;"></div>
+                    <div class="button-group" style="margin-top: auto; padding-top: 15px;">
+                        <button id="check-button">Check Answer</button>
+                        <button id="next-button" style="display: none;">Next Question</button>
+                    </div>
+                </div>
             </div>
 
-            <div id="choices-area">
-                <!-- Choices will be populated by JavaScript -->
-            </div>
-
-            <button id="check-button">Check Answer</button>
-
-            <div id="feedback-area">
-                <!-- Feedback Correct/Incorrect will appear here -->
-            </div>
-            <button id="next-button" style="display: none;">Next Question</button>
         </div>
 
-        <!-- Question List Tab Content -->
-        <div class="tab-content" id="question-list-tab">
+        <!-- Question List Area -->
+        <div id="question-list" class="tab-content">
+            <h2>Question List</h2>
             <div id="questions-list">
-                <!-- Questions list will be populated by JavaScript -->
+                <!-- Dynamically populated list -->
             </div>
-        </div>
-
-        <!-- Review Tab Content -->
-        <div class="tab-content" id="review-tab">
-            <h2>Session Review</h2>
-            <div id="review-summary">
-                <!-- Summary stats will go here -->
-            </div>
-            <ul id="review-list">
-                <!-- Review items will be populated here -->
-            </ul>
+            <!-- Moved Reset Button Back Here -->
             <button id="reset-progress-button">Reset Progress</button>
         </div>
 
+        <!-- Review Area -->
+        <div id="review" class="tab-content">
+            <h2>Review Incorrect Answers</h2>
+            <div id="review-summary">
+                <!-- Summary stats will be added here -->
+            </div>
+            <ul id="review-list">
+                <!-- Incorrect answers will be listed here -->
+            </ul>
+        </div>
     </div>
 
+    <!-- Link to Prism JS from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    <script src="quiz.js"></script>
+    <!-- Link to Quiz Logic -->
+    <script src="quiz.js" defer></script>
 </body>
 </html>
