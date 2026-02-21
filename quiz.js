@@ -1,515 +1,539 @@
-// --- Quiz Logic ---
-const problemTitleEl = document.getElementById('problem-title');
-const problemStatementEl = document.getElementById('problem-statement');
-const codeSkeletonEl = document.getElementById('code-skeleton'); // The <code> element
-const choicesAreaEl = document.getElementById('choices-area');
-const checkButton = document.getElementById('check-button');
-const feedbackAreaEl = document.getElementById('feedback-area');
-const nextButton = document.getElementById('next-button');
-// --- Add Progress Bar Element References ---
-const progressBarFillEl = document.getElementById('progress-bar-fill');
-const progressTextEl = document.getElementById('progress-text');
-const reviewSummaryEl = document.getElementById('review-summary');
-const reviewListEl = document.getElementById('review-list');
-const resetProgressButton = document.getElementById('reset-progress-button');
+import {
+  fisherYatesShuffle,
+  findCorrectChoiceId,
+  normalizeQuestion,
+  migrateLegacySession,
+  findNextQuestionIndex,
+  buildSessionStats,
+  isValidQuestion,
+} from './quiz-core.mjs';
 
-let quizData = [];
-let currentQuestionIndex = 0;
-let correctAnswerIndex = -1;
-let sessionProgress = {}; // { questionIndex: { selected: shuffledIndex, correct: correctAnswerIndex, isCorrect: bool } }
-const SESSION_STORAGE_KEY = 'algoQuizSessionProgress'; // Key for localStorage
+const SESSION_STORAGE_KEY = 'algoQuizSessionProgressV2';
+const LEGACY_STORAGE_KEY = 'algoQuizSessionProgress';
+const GAME_STORAGE_KEY = 'algoQuizGameStateV2';
+const LEGACY_GAME_STORAGE_KEY = 'algoQuizGameState';
 
-// --- Persistence Functions ---
+const XP_PER_CORRECT = 10;
+const XP_STREAK_BONUS = 5;
+const ACHIEVEMENTS = [
+  { id: 'first_correct', label: 'First Blood', desc: 'Answer your first question correctly' },
+  { id: 'streak_3', label: 'On a Roll', desc: 'Get 3 correct in a row' },
+  { id: 'streak_5', label: 'Hot Streak', desc: 'Get 5 correct in a row' },
+  { id: 'xp_100', label: 'Centurion', desc: 'Earn 100 XP' },
+  { id: 'halfway', label: 'Halfway There', desc: 'Answer half the quiz' },
+  { id: 'perfect', label: 'Perfectionist', desc: 'Answer all completed questions correctly' },
+];
 
-/**
- * Saves the current session progress to localStorage.
- */
-function saveSessionProgress() {
-  try {
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionProgress));
-  } catch (e) {
-    console.error("Failed to save session progress:", e);
-  }
+const state = {
+  questions: [],
+  questionById: new Map(),
+  questionOrder: [],
+  currentQuestionIndex: 0,
+  currentChoiceOrder: [],
+  currentStreak: 0,
+  bestStreak: 0,
+  totalXP: 0,
+  unlockedAchievements: new Set(),
+  sessionProgress: {},
+};
+
+const el = {
+  container: document.querySelector('.quiz-container'),
+  loadingSpinner: document.getElementById('loading-spinner'),
+  problemTitle: document.getElementById('problem-title'),
+  problemStatement: document.getElementById('problem-statement'),
+  codeSkeleton: document.getElementById('code-skeleton'),
+  choicesArea: document.getElementById('choices-area'),
+  checkButton: document.getElementById('check-button'),
+  nextButton: document.getElementById('next-button'),
+  feedbackArea: document.getElementById('feedback-area'),
+  progressBarFill: document.getElementById('progress-bar-fill'),
+  progressText: document.getElementById('progress-text'),
+  questionsList: document.getElementById('questions-list'),
+  reviewSummary: document.getElementById('review-summary'),
+  reviewList: document.getElementById('review-list'),
+  resetProgressButton: document.getElementById('reset-progress-button'),
+  tabNavigation: document.querySelector('.tab-navigation'),
+  tabButtons: Array.from(document.querySelectorAll('.tab-button')),
+  tabContents: Array.from(document.querySelectorAll('.tab-content')),
+  streakCount: document.getElementById('streak-count'),
+  xpCount: document.getElementById('xp-count'),
+  achievementToastContainer: document.getElementById('achievement-toast-container'),
+};
+
+function showAppError(message) {
+  if (!el.container) return;
+  el.container.innerHTML = `<div class="error-message" role="alert">${message}</div>`;
 }
 
-/**
- * Loads session progress from localStorage.
- */
-function loadSessionProgress() {
+function saveState() {
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state.sessionProgress));
+  localStorage.setItem(
+    GAME_STORAGE_KEY,
+    JSON.stringify({
+      currentStreak: state.currentStreak,
+      bestStreak: state.bestStreak,
+      totalXP: state.totalXP,
+      unlockedAchievements: Array.from(state.unlockedAchievements),
+    }),
+  );
+}
+
+function loadState() {
+  let loadedSession = {};
+
   try {
-    const savedProgress = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (savedProgress) {
-      sessionProgress = JSON.parse(savedProgress);
-      // Find the next unanswered question to resume
-      const lastAnsweredIndex = Math.max(...Object.keys(sessionProgress).map(Number));
-      // Decide where to start: next question or beginning if all answered
-      if (lastAnsweredIndex >= 0 && lastAnsweredIndex < quizData.length - 1) {
-           currentQuestionIndex = lastAnsweredIndex + 1;
-      } else if (Object.keys(sessionProgress).length === quizData.length) {
-          // All questions answered - maybe start at review or first question?
-          console.log("Quiz previously completed. Starting from beginning or review tab.");
-          // For now, let's just start at 0, Review tab would be better later.
-          currentQuestionIndex = 0; // Or handle differently (e.g., show review tab first)
-      } else {
-          currentQuestionIndex = 0; // Default to start if progress is weird
-      }
-      console.log("Session progress loaded. Resuming at question:", currentQuestionIndex + 1);
-    } else {
-      sessionProgress = {};
-      currentQuestionIndex = 0; // No saved progress
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (raw) {
+      loadedSession = JSON.parse(raw) || {};
     }
-  } catch (e) {
-    console.error("Failed to load or parse session progress:", e);
-    sessionProgress = {}; // Reset on error
-    currentQuestionIndex = 0;
+  } catch (_e) {
+    loadedSession = {};
   }
+
+  if (!Object.keys(loadedSession).length) {
+    try {
+      const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacyRaw) {
+        const legacySession = JSON.parse(legacyRaw) || {};
+        loadedSession = migrateLegacySession(legacySession, state.questions, state.questionOrder);
+      }
+    } catch (_e) {
+      loadedSession = {};
+    }
+  }
+
+  state.sessionProgress = loadedSession;
+
+  try {
+    const rawGame = localStorage.getItem(GAME_STORAGE_KEY) || localStorage.getItem(LEGACY_GAME_STORAGE_KEY);
+    if (rawGame) {
+      const game = JSON.parse(rawGame);
+      state.currentStreak = Number(game.currentStreak || 0);
+      state.bestStreak = Number(game.bestStreak || 0);
+      state.totalXP = Number(game.totalXP || 0);
+      state.unlockedAchievements = new Set(Array.isArray(game.unlockedAchievements) ? game.unlockedAchievements : []);
+    }
+  } catch (_e) {
+    state.currentStreak = 0;
+    state.bestStreak = 0;
+    state.totalXP = 0;
+    state.unlockedAchievements = new Set();
+  }
+
+  state.currentQuestionIndex = findNextQuestionIndex(state.questionOrder, state.sessionProgress);
+  saveState();
 }
 
-// Fetch quiz data from external JSON file
-function fetchQuizData() {
-  fetch('quiz-data.json')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      quizData = data;
-      if (quizData.length > 0) {
-         loadSessionProgress(); // Load progress AFTER quiz data is available
-         updateProgressBar();
-         loadQuestion(currentQuestionIndex);
-      } else {
-          console.error("Quiz data is empty.");
-          // Display an error message in the UI
-          document.querySelector('.quiz-container').innerHTML = '<div class="error-message">No questions found in quiz data.</div>';
-      }
-    })
-    .catch(error => {
-      console.error('Error loading or parsing quiz data:', error);
-      document.querySelector('.quiz-container').innerHTML = `<div class="error-message">Failed to load quiz data: ${error.message}. Please refresh.</div>`;
-    });
+function setLoading(loading) {
+  if (!el.loadingSpinner) return;
+  el.loadingSpinner.classList.toggle('visible', loading);
 }
 
-// Add new variables for tab functionality
-const tabButtons = document.querySelectorAll('.tab-button');
-const tabContents = document.querySelectorAll('.tab-content');
-const questionsListEl = document.getElementById('questions-list');
+function showFeedback(message, kind) {
+  el.feedbackArea.textContent = message;
+  el.feedbackArea.className = kind ? `feedback-area ${kind}` : 'feedback-area';
+}
 
-// Tab switching functionality
+function clearFeedback() {
+  showFeedback('', '');
+}
+
 function switchTab(tabId) {
-    console.log(`Switching to tab: ${tabId}`); // Log which tab we're trying to switch to
+  el.tabContents.forEach((content) => {
+    content.classList.toggle('active', content.id === `${tabId}-tab`);
+  });
+  el.tabButtons.forEach((button) => {
+    const isActive = button.dataset.tab === tabId;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
 
-    // Hide all tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        console.log(` Hiding content: #${content.id}`);
-        content.classList.remove('active');
-    });
-
-    // Deactivate all tab buttons
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active');
-    });
-
-    // Show the selected tab content
-    const contentToShow = document.getElementById(`${tabId}-tab`);
-    if (contentToShow) {
-        console.log(` Showing content: #${contentToShow.id}`);
-        contentToShow.classList.add('active');
-    } else {
-        console.error(`Content element not found for tab ID: ${tabId}-tab`);
-    }
-
-    // Activate the selected tab button
-    const buttonToActivate = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
-    if (buttonToActivate) {
-        console.log(` Activating button: [data-tab="${buttonToActivate.dataset.tab}"]`);
-        buttonToActivate.classList.add('active');
-    } else {
-        console.error(`Button element not found for data-tab: ${tabId}`);
-    }
-
-    // Populate list ONLY when switching TO that tab
-    if (tabId === 'question-list' && quizData.length > 0) {
-        populateQuestionsList();
-    } else if (tabId === 'review') {
-        populateReviewView();
-    }
+  if (tabId === 'question-list') {
+    renderQuestionList();
+  }
+  if (tabId === 'review') {
+    renderReview();
+  }
 }
 
-// REMOVED loadQuestion override
+function renderProblemStatement(statement) {
+  el.problemStatement.textContent = '';
+  const lines = String(statement || '').split('\n');
+  lines.forEach((line, i) => {
+    el.problemStatement.appendChild(document.createTextNode(line));
+    if (i < lines.length - 1) {
+      el.problemStatement.appendChild(document.createElement('br'));
+    }
+  });
+}
 
-// --- Progress Bar Logic ---
 function updateProgressBar() {
-    // Ensure quizData is loaded before calculating
-    if (!quizData || quizData.length === 0) {
-        progressBarFillEl.style.width = '0%';
-        progressTextEl.textContent = 'Loading...';
-        return;
-    }
-    const totalQuestions = quizData.length;
-    // Ensure index is valid
-    const displayIndex = Math.max(0, Math.min(currentQuestionIndex, totalQuestions - 1));
-    const percentComplete = ((displayIndex + 1) / totalQuestions) * 100;
-    progressBarFillEl.style.width = `${percentComplete}%`;
-    progressTextEl.textContent = `Question ${displayIndex + 1} of ${totalQuestions}`;
+  const total = state.questionOrder.length;
+  if (!total) {
+    el.progressText.textContent = 'No questions loaded';
+    el.progressBarFill.style.width = '0%';
+    return;
+  }
+
+  const index = Math.max(0, Math.min(state.currentQuestionIndex, total - 1));
+  const progressPercent = ((index + 1) / total) * 100;
+  el.progressBarFill.style.width = `${progressPercent}%`;
+
+  const stats = buildSessionStats(state.questionOrder, state.sessionProgress);
+  el.progressText.textContent = `Question ${index + 1} of ${total} - ${stats.answered} answered`;
 }
 
-function loadQuestion(questionIndex) {
-     if (questionIndex < 0 || questionIndex >= quizData.length) {
-        console.error("Attempted to load question index out of bounds:", questionIndex);
-        // Optionally handle this case, e.g., show quiz end screen or first question
-        return;
-    }
-
-    const question = quizData[questionIndex];
-
-    // --- Update progress bar for the new question ---
-    updateProgressBar(); // Call this at the beginning of loading
-
-    problemTitleEl.textContent = question.problemTitle;
-    problemStatementEl.innerHTML = ''; // Clear previous
-    // Basic conversion of newline to <br> for problem statement display
-    const statementLines = question.problemStatement.split('\n');
-    statementLines.forEach((line, index) => {
-        problemStatementEl.appendChild(document.createTextNode(line));
-        if (index < statementLines.length - 1) {
-             problemStatementEl.appendChild(document.createElement('br'));
-        }
-    });
-
-    codeSkeletonEl.textContent = question.codeSkeleton;
-
-    // Highlight the main skeleton
-    if (window.Prism) {
-        Prism.highlightElement(codeSkeletonEl);
-    } else {
-        console.warn("Prism syntax highlighter not found.");
-    }
-
-    // Clear previous choices and feedback & reset buttons
-    choicesAreaEl.innerHTML = '';
-    resetFeedbackAndButtons(); // Use helper
-
-    // --- Shuffle choices --- (Keep if desired)
-    let choicesWithOriginalIndex = question.choices.map((choice, index) => ({ choice, originalIndex: index }));
-    let shuffledChoicesWithOriginalIndex = choicesWithOriginalIndex.sort(() => Math.random() - 0.5);
-    correctAnswerIndex = shuffledChoicesWithOriginalIndex.findIndex(item => item.choice.correct);
-    // --- End shuffle ---
-
-    // --- Create and append elements first ---
-    const choiceElementsToHighlight = [];
-
-    shuffledChoicesWithOriginalIndex.forEach((item, shuffledIndex) => {
-        const choiceId = `choice-${shuffledIndex}`;
-        const choiceData = item.choice;
-
-        const label = document.createElement('label');
-        label.htmlFor = choiceId;
-        label.className = 'choice-label';
-
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.id = choiceId;
-        radio.name = 'answer';
-        radio.value = shuffledIndex;
-
-        const pre = document.createElement('pre');
-        const code = document.createElement('code');
-        code.className = 'language-python'; // Assume Python, adjust if needed
-        code.textContent = choiceData.text; // Set text content
-
-        pre.appendChild(code);
-        label.appendChild(radio);
-        label.appendChild(pre);
-        choicesAreaEl.appendChild(label);
-        choiceElementsToHighlight.push(code);
-    });
-
-    // --- Highlight all choice code elements *after* they are in the DOM ---
-    if (window.Prism) {
-        choiceElementsToHighlight.forEach(codeElement => {
-            Prism.highlightElement(codeElement);
-        });
-    }
+function updateGameUI() {
+  el.streakCount.textContent = String(state.currentStreak);
+  el.xpCount.textContent = String(state.totalXP);
 }
 
-function checkAnswer() {
-    const selectedRadio = document.querySelector('input[name="answer"]:checked');
-    if (!selectedRadio) {
-        feedbackAreaEl.textContent = "Please select an answer.";
-        feedbackAreaEl.className = 'feedback-area incorrect';
-        return;
-    }
-
-    const selectedChoiceIndex = parseInt(selectedRadio.value, 10);
-    const isCorrect = selectedChoiceIndex === correctAnswerIndex;
-
-    // --- Record the result --- 
-    sessionProgress[currentQuestionIndex] = {
-        selected: selectedChoiceIndex,
-        correct: correctAnswerIndex, // Storing this might be useful for review
-        isCorrect: isCorrect
-    };
-    saveSessionProgress(); // Save progress immediately
-    // -------------------------
-
-    const selectedLabel = selectedRadio.closest('label');
-
-    document.querySelectorAll('input[name="answer"]').forEach(radio => {
-        radio.disabled = true;
-    });
-    checkButton.disabled = true;
-    checkButton.style.display = 'none';
-
-    if (isCorrect) { // Use the calculated isCorrect variable
-        feedbackAreaEl.textContent = "Correct!";
-        feedbackAreaEl.className = 'feedback-area correct';
-        if (selectedLabel) {
-            selectedLabel.classList.add('correct-style');
-        }
-    } else {
-        feedbackAreaEl.textContent = "Incorrect.";
-        feedbackAreaEl.className = 'feedback-area incorrect';
-        const correctLabel = document.querySelector(`input[value='${correctAnswerIndex}']`)?.closest('label');
-        if (correctLabel) {
-            correctLabel.classList.add('correct-style');
-        }
-        if (selectedLabel) {
-            selectedLabel.classList.add('incorrect-style');
-        }
-    }
-
-    if (currentQuestionIndex < quizData.length - 1) {
-         nextButton.style.display = 'inline-block';
-    } else {
-         feedbackAreaEl.textContent += " Quiz Finished!";
-    }
-    
-    // Update question list view if it's active to mark as completed
-    if (document.getElementById('question-list-tab').classList.contains('active')) {
-        populateQuestionsList();
-    }
+function showToast(text, description) {
+  const toast = document.createElement('div');
+  toast.className = 'achievement-toast';
+  toast.innerHTML = `
+    <span class="toast-label">${text}</span>
+    <span class="toast-desc">${description}</span>
+  `;
+  el.achievementToastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 2600);
 }
 
-/**
- * Populates the list of questions in the 'Question List' tab.
- * Adds click listeners to jump to a specific question.
- */
-function populateQuestionsList() {
-  questionsListEl.innerHTML = '';
+function checkAndUnlockAchievements() {
+  const stats = buildSessionStats(state.questionOrder, state.sessionProgress);
+  const completedAll = stats.answered === state.questionOrder.length && state.questionOrder.length > 0;
 
-  quizData.forEach((question, index) => {
-    const questionItem = document.createElement('div');
-    questionItem.className = 'question-item';
-    
-    // --- Add visual indicator based on session progress --- 
-    if (sessionProgress[index]) {
-        questionItem.classList.add('answered'); // General answered class
-        if (sessionProgress[index].isCorrect) {
-            questionItem.classList.add('correct-answered'); // Mark correct
-            questionItem.innerHTML = `✅ ${index + 1}. ${question.problemTitle}`;
-        } else {
-            questionItem.classList.add('incorrect-answered'); // Mark incorrect
-            questionItem.innerHTML = `❌ ${index + 1}. ${question.problemTitle}`;
-        }
-    } else {
-        questionItem.textContent = `${index + 1}. ${question.problemTitle}`; // Unanswered
-    }
-    // -------------------------------------------------------
+  const unlock = (id) => {
+    if (state.unlockedAchievements.has(id)) return;
+    const def = ACHIEVEMENTS.find((item) => item.id === id);
+    if (!def) return;
+    state.unlockedAchievements.add(id);
+    showToast(`Achievement Unlocked: ${def.label}`, def.desc);
+  };
 
-    questionItem.dataset.questionIndex = index;
-    questionsListEl.appendChild(questionItem);
+  if (stats.correct >= 1) unlock('first_correct');
+  if (state.currentStreak >= 3) unlock('streak_3');
+  if (state.currentStreak >= 5) unlock('streak_5');
+  if (state.totalXP >= 100) unlock('xp_100');
+  if (stats.answered >= Math.ceil(state.questionOrder.length / 2)) unlock('halfway');
+  if (completedAll && stats.correct === stats.answered) unlock('perfect');
+}
+
+function renderChoices(question) {
+  el.choicesArea.innerHTML = '';
+
+  const order = fisherYatesShuffle(question.choices.map((c) => c.id));
+  state.currentChoiceOrder = order;
+
+  order.forEach((choiceId, index) => {
+    const choice = question.choices.find((item) => item.id === choiceId);
+    if (!choice) return;
+
+    const label = document.createElement('label');
+    label.className = 'choice-label';
+    label.htmlFor = `choice-${index}`;
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'answer';
+    radio.id = `choice-${index}`;
+    radio.value = choice.id;
+    radio.setAttribute('aria-label', `Choice ${index + 1}`);
+
+    const pre = document.createElement('pre');
+    const code = document.createElement('code');
+    code.className = 'language-python';
+    code.textContent = choice.text;
+    pre.appendChild(code);
+
+    const explanation = document.createElement('p');
+    explanation.className = 'choice-explanation';
+    explanation.textContent = choice.explanation;
+
+    label.appendChild(radio);
+    label.appendChild(pre);
+    label.appendChild(explanation);
+    el.choicesArea.appendChild(label);
   });
 
-  // Add event listener to the list container (using event delegation)
-  // Ensure this listener isn't added multiple times if populate is called often
-  // A simple check (might need refinement if populate is called outside switchTab)
-  if (!questionsListEl.dataset.listenerAttached) {
-      questionsListEl.addEventListener('click', (event) => {
-        const questionItemElement = event.target.closest('.question-item');
-        if (questionItemElement) {
-          const index = parseInt(questionItemElement.dataset.questionIndex, 10);
-          console.log("Index:", index); // Keep for debugging if needed
-          if (!isNaN(index)) {
-            jumpToQuestion(index);
-          }
-        }
-      });
-      questionsListEl.dataset.listenerAttached = 'true'; // Mark as attached
+  if (window.Prism) {
+    el.choicesArea.querySelectorAll('code').forEach((node) => Prism.highlightElement(node));
   }
 }
 
-/**
- * Jumps to a specific question in the quiz.
- * @param {number} questionIndex - The index of the question to jump to.
- */
-function jumpToQuestion(questionIndex) {
-  if (questionIndex >= 0 && questionIndex < quizData.length) {
-    currentQuestionIndex = questionIndex;
-    loadQuestion(currentQuestionIndex); // Corrected function call
-    // resetFeedbackAndButtons(); // This is called within loadQuestion now
-    console.log("Switching to quiz tab");
-    switchTab('quiz'); // Switch view back to the quiz
+function renderQuestion(questionIndex) {
+  if (questionIndex < 0 || questionIndex >= state.questionOrder.length) {
+    return;
+  }
+
+  state.currentQuestionIndex = questionIndex;
+  const questionId = state.questionOrder[questionIndex];
+  const question = state.questionById.get(questionId);
+  if (!question) return;
+
+  el.problemTitle.textContent = question.problemTitle;
+  renderProblemStatement(question.problemStatement);
+  el.codeSkeleton.textContent = question.codeSkeleton;
+
+  if (window.Prism) {
+    Prism.highlightElement(el.codeSkeleton);
+  }
+
+  renderChoices(question);
+  clearFeedback();
+
+  el.checkButton.disabled = false;
+  el.checkButton.style.display = 'inline-block';
+  el.nextButton.style.display = 'none';
+
+  updateProgressBar();
+}
+
+function markChoicesAfterAnswer(question, selectedChoiceId) {
+  const correctChoiceId = findCorrectChoiceId(question);
+  const labels = Array.from(el.choicesArea.querySelectorAll('.choice-label'));
+
+  labels.forEach((label) => {
+    const radio = label.querySelector('input[type="radio"]');
+    if (!radio) return;
+    radio.disabled = true;
+    label.classList.remove('correct-style', 'incorrect-style', 'correct-answer-highlight', 'incorrect-selection-highlight');
+
+    if (radio.value === correctChoiceId) {
+      label.classList.add('correct-style');
+    }
+    if (radio.value === selectedChoiceId && selectedChoiceId !== correctChoiceId) {
+      label.classList.add('incorrect-style');
+    }
+  });
+}
+
+function handleCheckAnswer() {
+  const selected = document.querySelector('input[name="answer"]:checked');
+  if (!selected) {
+    showFeedback('Select an answer before checking.', 'incorrect');
+    return;
+  }
+
+  const questionId = state.questionOrder[state.currentQuestionIndex];
+  const question = state.questionById.get(questionId);
+  if (!question) return;
+
+  const selectedChoiceId = selected.value;
+  const correctChoiceId = findCorrectChoiceId(question);
+  const isCorrect = selectedChoiceId === correctChoiceId;
+
+  state.sessionProgress[questionId] = {
+    selectedChoiceId,
+    correctChoiceId,
+    isCorrect,
+    answeredAt: new Date().toISOString(),
+  };
+
+  if (isCorrect) {
+    state.currentStreak += 1;
+    state.totalXP += XP_PER_CORRECT + Math.max(0, state.currentStreak - 1) * XP_STREAK_BONUS;
   } else {
-    console.error('Invalid question index:', questionIndex);
+    state.currentStreak = 0;
   }
+
+  state.bestStreak = Math.max(state.bestStreak, state.currentStreak);
+  checkAndUnlockAchievements();
+  updateGameUI();
+  saveState();
+
+  markChoicesAfterAnswer(question, selectedChoiceId);
+  showFeedback(isCorrect ? 'Correct. Great work.' : 'Not quite. Review the explanation and try the next one.', isCorrect ? 'correct' : 'incorrect');
+
+  el.checkButton.disabled = true;
+  el.checkButton.style.display = 'none';
+  el.nextButton.style.display = state.currentQuestionIndex < state.questionOrder.length - 1 ? 'inline-block' : 'none';
+
+  renderQuestionList();
+  renderReview();
 }
 
-// --- Helper function to reset feedback and buttons ---
-function resetFeedbackAndButtons() {
-    feedbackAreaEl.textContent = '';
-    feedbackAreaEl.className = 'feedback-area'; // Reset class name
-    checkButton.disabled = false;
-    checkButton.style.display = 'inline-block'; // Use inline-block or block as needed
-    nextButton.style.display = 'none';
+function renderQuestionList() {
+  el.questionsList.innerHTML = '';
 
-    // Re-enable radio buttons and reset styles
-    document.querySelectorAll('#choices-area .choice-label').forEach(label => {
-        label.classList.remove('correct-style', 'incorrect-style');
-        const radio = label.querySelector('input[type="radio"]');
-        if(radio) {
-            radio.disabled = false;
-            radio.checked = false; // Uncheck radios
-        }
-    });
-}
+  state.questionOrder.forEach((questionId, index) => {
+    const question = state.questionById.get(questionId);
+    if (!question) return;
 
-/**
- * Populates the Review Progress tab with summary and details.
- */
-function populateReviewView() {
-    reviewListEl.innerHTML = ''; // Clear previous list
-    reviewSummaryEl.innerHTML = ''; // Clear summary
+    const status = state.sessionProgress[questionId];
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'question-item';
 
-    const answeredQuestions = Object.keys(sessionProgress);
-    if (answeredQuestions.length === 0) {
-        reviewSummaryEl.textContent = "No questions answered yet in this session.";
-        return;
+    if (status) {
+      item.classList.add(status.isCorrect ? 'correct-answered' : 'incorrect-answered');
     }
 
-    let correctCount = 0;
-    answeredQuestions.forEach(qIndexStr => {
-        if (sessionProgress[qIndexStr]?.isCorrect) {
-            correctCount++;
-        }
+    const prefix = status ? (status.isCorrect ? 'OK' : 'X') : '...';
+    item.textContent = `${prefix} ${index + 1}. ${question.problemTitle}`;
+
+    item.addEventListener('click', () => {
+      renderQuestion(index);
+      switchTab('quiz');
     });
 
-    const totalAnswered = answeredQuestions.length;
-    const incorrectCount = totalAnswered - correctCount;
-    const percentage = totalAnswered > 0 ? ((correctCount / totalAnswered) * 100).toFixed(1) : 0;
-
-    reviewSummaryEl.innerHTML = `
-        <p>Total Answered: ${totalAnswered}</p>
-        <p>Correct: ${correctCount}</p>
-        <p>Incorrect: ${incorrectCount}</p>
-        <p>Score: ${percentage}%</p>
-    `;
-
-    // Populate the list with details
-    quizData.forEach((question, index) => {
-        if (sessionProgress[index]) { // Only show answered questions
-            const result = sessionProgress[index];
-            const listItem = document.createElement('li');
-            listItem.className = result.isCorrect ? 'review-item correct-answered' : 'review-item incorrect-answered';
-            
-            // Find the text of the selected and correct choices
-            // Need to find the original choice text based on saved indices
-            // Assumes choices were shuffled! We need to map back or store text.
-            // --- Option 1: Re-find based on index (Simpler for now, less robust if choices change)
-            let selectedChoiceText = "N/A";
-            let correctChoiceText = "N/A";
-            // Note: This assumes the *structure* of choices doesn't change, only order
-            const originalChoices = quizData[index].choices; 
-            if (originalChoices[result.selected]) {
-                selectedChoiceText = originalChoices[result.selected].text.substring(0, 80) + '...'; // Truncate for display
-            }
-             if (originalChoices[result.correct]) {
-                correctChoiceText = originalChoices[result.correct].text.substring(0, 80) + '...'; // Truncate
-            }
-            // --- End Option 1 ---
-            // TODO: A more robust way would be to store the actual text or a stable ID in sessionProgress
-
-            listItem.innerHTML = `
-                <strong>${index + 1}. ${question.problemTitle}</strong> 
-                <span>(${result.isCorrect ? 'Correct' : 'Incorrect'})</span>
-                <div class="review-details">
-                    Your Answer: <pre><code>${selectedChoiceText}</code></pre>
-                    ${!result.isCorrect ? `Correct Answer: <pre><code>${correctChoiceText}</code></pre>` : ''}
-                </div>
-            `;
-            reviewListEl.appendChild(listItem);
-        }
-    });
+    el.questionsList.appendChild(item);
+  });
 }
 
-/**
- * Resets the session progress and restarts the quiz.
- */
+function renderReview() {
+  el.reviewSummary.innerHTML = '';
+  el.reviewList.innerHTML = '';
+
+  const stats = buildSessionStats(state.questionOrder, state.sessionProgress);
+  if (!stats.answered) {
+    el.reviewSummary.textContent = 'No answers yet. Complete a few questions to see stats.';
+    return;
+  }
+
+  const cards = [
+    { label: 'Answered', value: stats.answered },
+    { label: 'Correct', value: stats.correct },
+    { label: 'Incorrect', value: stats.incorrect },
+    { label: 'Score', value: `${stats.percentage}%` },
+  ];
+
+  cards.forEach((entry) => {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+
+    const value = document.createElement('span');
+    value.className = 'stat-value';
+    value.textContent = String(entry.value);
+
+    const label = document.createElement('span');
+    label.className = 'stat-label';
+    label.textContent = entry.label;
+
+    card.appendChild(value);
+    card.appendChild(label);
+    el.reviewSummary.appendChild(card);
+  });
+
+  state.questionOrder.forEach((questionId, idx) => {
+    const result = state.sessionProgress[questionId];
+    if (!result) return;
+    const question = state.questionById.get(questionId);
+    if (!question) return;
+
+    const selected = question.choices.find((choice) => choice.id === result.selectedChoiceId);
+    const correct = question.choices.find((choice) => choice.id === result.correctChoiceId) || question.choices.find((choice) => choice.correct);
+
+    const item = document.createElement('li');
+    item.className = `review-item ${result.isCorrect ? 'correct-answered' : 'incorrect-answered'}`;
+
+    const title = document.createElement('strong');
+    title.textContent = `${idx + 1}. ${question.problemTitle}`;
+
+    const status = document.createElement('span');
+    status.textContent = result.isCorrect ? '(Correct)' : '(Incorrect)';
+
+    const details = document.createElement('div');
+    details.className = 'review-details';
+
+    const yourAnswer = document.createElement('p');
+    yourAnswer.textContent = `Your answer: ${selected ? selected.text.split('\n')[0] : 'Unavailable'}`;
+    details.appendChild(yourAnswer);
+
+    if (!result.isCorrect && correct) {
+      const correctAnswer = document.createElement('p');
+      correctAnswer.textContent = `Correct answer: ${correct.text.split('\n')[0]}`;
+      details.appendChild(correctAnswer);
+    }
+
+    item.appendChild(title);
+    item.appendChild(status);
+    item.appendChild(details);
+    el.reviewList.appendChild(item);
+  });
+}
+
 function resetProgress() {
-    if (confirm("Are you sure you want to reset your progress? This cannot be undone.")) {
-        sessionProgress = {};
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-        currentQuestionIndex = 0;
-        // Need to re-initialize the quiz state
-        updateProgressBar();
-        loadQuestion(currentQuestionIndex);
-        // Switch back to quiz tab
-        switchTab('quiz');
-        // Clear review view if currently visible
-        reviewListEl.innerHTML = '';
-        reviewSummaryEl.innerHTML = 'Progress reset.';
-        console.log("Session progress reset.");
-    }
+  const confirmed = window.confirm('Reset all saved quiz progress and game stats?');
+  if (!confirmed) return;
+
+  state.sessionProgress = {};
+  state.currentStreak = 0;
+  state.bestStreak = 0;
+  state.totalXP = 0;
+  state.unlockedAchievements = new Set();
+
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
+  localStorage.removeItem(GAME_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_GAME_STORAGE_KEY);
+
+  state.currentQuestionIndex = 0;
+  updateGameUI();
+  renderQuestion(0);
+  renderQuestionList();
+  renderReview();
+  switchTab('quiz');
 }
 
-// Initialize Quiz and Event Listeners on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  fetchQuizData(); // Fetch data when the DOM is ready (this now calls loadSessionProgress indirectly)
+function validateAndLoad(rawData) {
+  const normalized = rawData.map((q, index) => normalizeQuestion(q, index));
+  const valid = normalized.filter((q) => isValidQuestion(q));
 
-  // Tab Navigation Event Listener
-  document.querySelector('.tab-navigation').addEventListener('click', (event) => {
-      if (event.target && event.target.classList.contains('tab-button')) {
-          const tabId = event.target.dataset.tab;
-          switchTab(tabId);
-      }
+  if (!valid.length) {
+    showAppError('No valid quiz entries found. Run data validation and refresh.');
+    return;
+  }
+
+  state.questions = valid;
+  state.questionById = new Map(valid.map((question) => [question.id, question]));
+  state.questionOrder = valid.map((question) => question.id);
+
+  loadState();
+  updateGameUI();
+  renderQuestion(Math.max(0, state.currentQuestionIndex));
+  renderQuestionList();
+  renderReview();
+}
+
+async function fetchQuizData() {
+  setLoading(true);
+  try {
+    const response = await fetch('quiz-data.json');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch quiz data (${response.status})`);
+    }
+    const raw = await response.json();
+    if (!Array.isArray(raw)) {
+      throw new Error('quiz-data.json must contain an array of questions.');
+    }
+    validateAndLoad(raw);
+  } catch (error) {
+    showAppError(`Unable to load quiz data: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function wireEvents() {
+  el.checkButton.addEventListener('click', handleCheckAnswer);
+
+  el.nextButton.addEventListener('click', () => {
+    const nextIndex = Math.min(state.currentQuestionIndex + 1, state.questionOrder.length - 1);
+    renderQuestion(nextIndex);
   });
 
-  // Check Answer Button Listener
-  if (checkButton) {
-      checkButton.addEventListener('click', checkAnswer);
-  } else {
-      console.error('Check button not found');
-  }
+  el.tabNavigation.addEventListener('click', (event) => {
+    const button = event.target.closest('.tab-button');
+    if (!button) return;
+    switchTab(button.dataset.tab);
+  });
 
-  // Next Question Button Listener
-  if (nextButton) {
-      nextButton.addEventListener('click', () => {
-          // Move to the next question if possible
-          if (currentQuestionIndex < quizData.length - 1) {
-              currentQuestionIndex++;
-              loadQuestion(currentQuestionIndex);
-              // resetFeedbackAndButtons(); // Called within loadQuestion
-              // updateProgressBar(); // Called within loadQuestion
-          } else {
-              // Handle quiz completion (already handled in checkAnswer, potentially)
-              console.log('Attempted to go past the last question.');
-              // alert('Quiz Complete!'); // Maybe show completion state differently
-          }
-      });
-  } else {
-       console.error('Next button not found');
-  }
+  el.resetProgressButton.addEventListener('click', resetProgress);
+}
 
-  // Initial UI setup (optional, if needed before data loads)
-  updateProgressBar(); // Show initial loading state
-
-  // Reset Progress Button Listener
-  if (resetProgressButton) {
-    resetProgressButton.addEventListener('click', resetProgress);
-  } else {
-    console.error('Reset progress button not found');
-  }
-
-}); // End DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  wireEvents();
+  fetchQuizData();
+});
