@@ -1,367 +1,479 @@
+:root {
+  --bg-page: #060812;
+  --bg-grid: rgba(77, 234, 255, 0.08);
+  --bg-panel: rgba(14, 20, 36, 0.82);
+  --bg-card: rgba(20, 28, 48, 0.86);
+  --bg-card-hover: rgba(28, 38, 62, 0.94);
+  --text-main: #ecf4ff;
+  --text-muted: #a4b2cd;
+  --accent: #2ee6a6;
+  --accent-2: #25b9ff;
+  --danger: #ff5a7a;
+  --ok-bg: rgba(24, 76, 54, 0.6);
+  --bad-bg: rgba(102, 24, 46, 0.6);
+  --outline: rgba(142, 176, 255, 0.3);
+  --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.42);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --font-sans: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
-    line-height: 1.6;
-    padding: 20px;
-    background-color: #f4f4f4;
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px;
+  font-family: var(--font-sans);
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(37, 185, 255, 0.22), transparent 36%),
+    radial-gradient(circle at 82% 12%, rgba(46, 230, 166, 0.18), transparent 36%),
+    radial-gradient(circle at 48% 78%, rgba(94, 117, 255, 0.15), transparent 42%),
+    var(--bg-page);
+}
+
+.background-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.45;
+  z-index: -1;
 }
 
 .quiz-container {
-    max-width: 800px;
-    margin: auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  width: min(980px, 100%);
+  margin: 0 auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+  animation: lift-in 360ms ease-out;
+}
+
+.app-header {
+  margin-bottom: 20px;
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+  margin: 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+  letter-spacing: 0.02em;
+  color: var(--text-main);
 }
 
-/* --- Progress Bar Styles --- */
-.progress-container {
-    margin-bottom: 25px; /* Space below progress bar */
-    padding-bottom: 10px; /* Add some padding if needed */
+.app-subtitle {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
 }
 
-#progress-text {
-    font-size: 0.9em;
-    color: #777;
-    margin-bottom: 8px;
-    text-align: center; /* Center text */
-    font-weight: bold;
+#loading-spinner {
+  display: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
 }
 
-.progress-bar-container {
-    width: 100%;
-    height: 16px; /* Slightly thicker bar */
-    background-color: #e5e5e5; /* Light grey background track */
-    border-radius: 10px; /* Rounded corners */
-    overflow: hidden; /* Keep the fill inside */
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); /* Subtle inner shadow */
+#loading-spinner.visible {
+  display: block;
 }
 
-#progress-bar-fill {
-    height: 100%;
-    width: 0%; /* Start empty */
-    background-color: #58a700; /* Duolingo-like green */
-    /* Optional gradient for a bit more depth */
-    background-image: linear-gradient(to bottom, #78c800, #58a700);
-    border-radius: 10px; /* Match container */
-    transition: width 0.4s ease-in-out; /* Smooth animation on width change */
-    box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3); /* Subtle highlight */
-}
-/* --- End Progress Bar Styles --- */
-
-
-#question-area {
-    margin-bottom: 20px;
-}
-
-#problem-statement {
-    background-color: #f9f9f9;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #eee;
-    white-space: pre-wrap;
-}
-
-/* Keep your existing styles for code-skeleton, choices, buttons etc. */
-/* Ensure Prism theme overrides don't clash heavily, adjust if needed */
-#code-skeleton, .choice-label pre code {
-    padding: 15px;
-    border-radius: 5px;
-    overflow-x: auto;
-    white-space: pre;
-    display: block;
-    margin-top: 5px;
- }
- pre {
-    margin: 0;
- }
-
-.choice-label {
-    display: block;
-    margin-bottom: 10px; /* Slightly reduce space */
-    padding: 12px 15px; /* Adjust padding */
-    border: 1px solid #ccc;
-    border-radius: 8px; /* More rounded */
-    cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
-}
-
-.choice-label:hover {
-    background-color: #f0f0f0;
-    border-color: #bbb;
-}
-
-.choice-label input[type="radio"] {
-    margin-right: 12px;
-    vertical-align: middle; /* Align radio better with text/code */
-}
-
-/* Adjustments for code within choices */
-.choice-label pre {
-    margin-top: 8px; /* Space between radio and code block */
-}
-
-button {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    background-color: #5cb85c; /* Standard button green */
-    color: white;
-    border: none;
-    border-radius: 8px; /* Match choice rounding */
-    font-size: 16px;
-    font-weight: bold; /* Bolder text */
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-    text-transform: uppercase; /* ALL CAPS like Duolingo */
-    letter-spacing: 0.5px;
-}
-
-button:hover:not(:disabled) { /* Only hover effect if not disabled */
-    background-color: #4cae4c;
-}
-
-button:disabled {
-    background-color: #ccc; /* Grey out when disabled */
-    cursor: not-allowed;
-}
-
-
-#feedback-area {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px; /* Match rounding */
-    font-weight: bold;
-    text-align: center; /* Center feedback */
-}
-
-.correct {
-    background-color: #dff0d8;
-    color: #3c763d;
-    border: 1px solid #d6e9c6;
-}
-
-.incorrect {
-    background-color: #f2dede;
-    color: #a94442;
-    border: 1px solid #ebccd1;
-}
-
-#next-button {
-     background-color: #5cb85c; /* Match check button */
-     margin-top: 10px;
-}
-#next-button:hover {
-     background-color: #4cae4c;
-}
-
-/* Styles for highlighting choices during feedback */
-label.correct-answer-highlight {
-    border: 2px solid #58a700 !important; /* Use !important cautiously */
-    background-color: #e7ffe7 !important;
-}
-
-label.incorrect-selection-highlight {
-     border: 2px solid crimson !important;
-     background-color: #fff0f0 !important;
-}
-
-/* Tab Navigation Styles */
 .tab-navigation {
-    display: flex;
-    /* flex-wrap: wrap; */ /* Remove wrap if using segmented control */
-    /* gap: 10px; */ /* Remove gap for segmented look */
-    margin-bottom: 20px;
-    /* border-bottom: 2px solid #eee; */ /* Remove bottom border */
-    /* padding-bottom: 10px; */ /* Remove padding */
-    border: 1px solid #ccc; /* Add border to the container */
-    border-radius: 8px; /* Rounded corners for the whole control */
-    overflow: hidden; /* Keep background contained */
-    width: 100%; /* Ensure it takes full width */
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
 }
 
 .tab-button {
-    flex-grow: 1; /* Make buttons share space equally */
-    text-align: center; /* Center text */
-    background-color: #f9f9f9; /* Default background */
-    color: #555;
-    border: none;
-    /* Add side borders for separation, except for the last one */
-    border-right: 1px solid #ccc;
-    padding: 12px 5px; /* Adjusted padding */
-    cursor: pointer;
-    font-size: 15px; /* Slightly smaller font */
-    /* border-radius: 5px; */ /* Remove individual radius */
-    transition: background-color 0.3s ease, color 0.3s ease;
-    margin: 0;
-    text-transform: none;
-    letter-spacing: normal;
-    /* width: auto; */ /* Remove width auto */
-    display: block; /* Ensure it behaves like a block inside flex */
+  flex: 1;
+  border: 1px solid var(--outline);
+  background: rgba(22, 32, 54, 0.64);
+  color: var(--text-muted);
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  padding: 11px 10px;
+  cursor: pointer;
+  transition: 180ms ease;
 }
 
-.tab-button:last-child {
-    border-right: none; /* No border on the far right */
-}
-
-.tab-button:hover:not(.active) { /* Hover only on inactive */
-    background-color: #e9e9e9;
+.tab-button:hover,
+.tab-button:focus-visible {
+  color: var(--text-main);
+  border-color: var(--accent-2);
+  outline: none;
 }
 
 .tab-button.active {
-    background-color: #58a700; /* Theme green */
-    color: white;
-    font-weight: bold;
-    border-color: #58a700; /* Match border to active background */
-}
-
-/* Remove specific styling for question list button for consistency */
-.tab-button[data-tab="question-list"] {
-    /* background-color: #ffb347; */ /* REMOVED */
-    /* color: #333; */ /* REMOVED */
-    /* font-weight: bold; */ /* REMOVED */
-    /* border: 2px solid #ffa500; */ /* REMOVED */
-    /* box-shadow: 0 2px 8px rgba(255,179,71,0.15); */ /* REMOVED */
-}
-
-.tab-button[data-tab="question-list"].active {
-    /* Styles are now handled solely by .tab-button.active */
-    /* background-color: #58a700; */
-    /* color: #fff; */
-    /* border: 2px solid #58a700; */
-    /* box-shadow: none; */
+  color: #04121d;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  border-color: transparent;
 }
 
 .tab-content {
-    display: none;
+  display: none;
 }
 
 .tab-content.active {
-    display: block;
+  display: block;
+  animation: fade-slide 220ms ease;
 }
 
-/* Question List Styles */
+.progress-container {
+  margin-bottom: 24px;
+}
+
+.progress-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#progress-text {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.88rem;
+}
+
+.gamification-bar {
+  display: flex;
+  gap: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+#streak-display { color: #ffb649; }
+#xp-display { color: #68f4c9; }
+
+.progress-bar-container {
+  border-radius: 999px;
+  border: 1px solid var(--outline);
+  height: 12px;
+  overflow: hidden;
+  background: rgba(13, 18, 33, 0.86);
+}
+
+#progress-bar-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 250ms ease;
+}
+
+#problem-title {
+  margin: 0 0 10px;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+}
+
+#problem-statement {
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-md);
+  background: rgba(13, 18, 32, 0.78);
+  color: var(--text-muted);
+  padding: 14px;
+  margin-bottom: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+pre {
+  margin: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(145, 165, 214, 0.35);
+  overflow: auto;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}
+
+#code-skeleton,
+.choice-label pre code {
+  display: block;
+  padding: 12px;
+}
+
+.todo-hint {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+#choices-area {
+  margin-top: 16px;
+}
+
+.choice-label {
+  display: block;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  background: var(--bg-card);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+.choice-label:hover,
+.choice-label:focus-within {
+  border-color: var(--accent-2);
+  background: var(--bg-card-hover);
+}
+
+.choice-label input[type='radio'] {
+  accent-color: var(--accent);
+  margin: 0 8px 8px 0;
+}
+
+.choice-label pre {
+  border: 1px solid rgba(145, 165, 214, 0.25);
+}
+
+.choice-explanation {
+  display: none;
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.choice-label.correct-style,
+.choice-label.correct-answer-highlight {
+  border-color: var(--accent);
+  background: var(--ok-bg);
+}
+
+.choice-label.incorrect-style,
+.choice-label.incorrect-selection-highlight {
+  border-color: var(--danger);
+  background: var(--bad-bg);
+}
+
+.choice-label.correct-style .choice-explanation,
+.choice-label.incorrect-style .choice-explanation {
+  display: block;
+}
+
+button {
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 12px 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+#check-button,
+#next-button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+#check-button {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  color: #031220;
+}
+
+#check-button:hover:not(:disabled),
+#check-button:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+}
+
+#next-button {
+  background: rgba(22, 31, 52, 0.94);
+  color: var(--text-main);
+  border-color: var(--outline);
+}
+
+#next-button:hover:not(:disabled),
+#next-button:focus-visible {
+  border-color: var(--accent-2);
+  outline: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feedback-area {
+  min-height: 48px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-weight: 700;
+}
+
+.feedback-area.correct {
+  border-color: rgba(46, 230, 166, 0.6);
+  background: rgba(17, 90, 63, 0.45);
+  color: #9ef7d4;
+}
+
+.feedback-area.incorrect {
+  border-color: rgba(255, 90, 122, 0.7);
+  background: rgba(108, 24, 44, 0.5);
+  color: #ff9eb2;
+}
+
 #questions-list {
-    padding: 20px;
+  display: grid;
+  gap: 10px;
 }
 
 .question-item {
-    padding: 15px;
-    border: 1px solid #eee;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  text-align: left;
+  width: 100%;
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--outline);
 }
 
-.question-item:hover {
-    background-color: #f0f0f0;
+.question-item.correct-answered {
+  border-left: 5px solid var(--accent);
 }
 
-.question-item.completed {
-    border-left: 4px solid #58a700;
+.question-item.incorrect-answered {
+  border-left: 5px solid var(--danger);
 }
 
-/* --- Review Tab Styles --- */
 #review-summary {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  border-radius: 5px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
 }
 
-#review-summary p {
-  margin: 5px 0;
+.stat-card {
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  background: var(--bg-card);
+  padding: 14px;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-muted);
 }
 
 #review-list {
   list-style: none;
+  margin: 14px 0 0;
   padding: 0;
 }
 
 .review-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.review-item.correct-answered {
-  border-left: 5px solid limegreen;
-  background-color: #f0fff0;
-}
-
-.review-item.incorrect-answered {
-  border-left: 5px solid crimson;
-  background-color: #fff0f0;
-}
-
-.review-item span {
-  font-style: italic;
-  font-size: 0.9em;
-  margin-left: 10px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  background: var(--bg-card);
+  padding: 12px;
+  margin-bottom: 10px;
 }
 
 .review-details {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px dashed #eee;
-  font-size: 0.95em;
-}
-
-.review-details pre {
-  background-color: #eee;
-  padding: 5px;
-  margin: 5px 0;
-  border-radius: 3px;
-  white-space: pre-wrap; /* Wrap long code lines */
-  word-wrap: break-word;
+  border-top: 1px dashed rgba(146, 171, 232, 0.35);
+  color: var(--text-muted);
+  font-size: 0.86rem;
 }
 
 #reset-progress-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: #dc3545; /* Red color for reset */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.2s ease;
+  margin-top: 16px;
+  background: rgba(255, 90, 122, 0.2);
+  border-color: rgba(255, 90, 122, 0.6);
+  color: #ffd8e2;
 }
 
-#reset-progress-button:hover {
-    background-color: #c82333;
+#achievement-toast-container {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1000;
+  display: grid;
+  gap: 8px;
 }
 
-.choice-label.correct-style { /* Changed selector */
-  background-color: #dff0d8; /* Theme green */
-  color: white;
-  border-color: #dff0d8; /* Darker green border */
+.achievement-toast {
+  background: rgba(15, 26, 46, 0.95);
+  border: 1px solid rgba(46, 230, 166, 0.7);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-width: 220px;
+  box-shadow: var(--shadow-soft);
+  animation: toast-slide 240ms ease;
 }
 
-/* Ensure text inside code blocks is readable */
-.choice-label.correct-style pre code { /* Changed selector */
-  color: white; /* Or another contrasting color if needed */
+.toast-label {
+  display: block;
+  font-weight: 700;
+  color: var(--accent);
 }
 
-.choice-label.incorrect-style { /* Changed selector */
-    background-color: #f2dede; /* Theme green */
-    color: white;
-    border-color: #f2dede; /* Darker green border */
+.toast-desc {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 2px;
+}
+
+.error-message {
+  border: 1px solid rgba(255, 90, 122, 0.6);
+  background: rgba(102, 24, 46, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  color: #ffd8e2;
+}
+
+@keyframes fade-slide {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-slide {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes lift-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 720px) {
+  body { padding: 14px; }
+  .quiz-container { padding: 16px; }
+  .tab-navigation { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
   }
-  
-  /* Ensure text inside code blocks is readable */
-  .choice-label.incorrect-style pre code { /* Changed selector */
-    color: white; /* Or another contrasting color if needed */
-  }
+}

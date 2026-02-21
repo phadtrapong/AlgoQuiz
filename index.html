@@ -1,76 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Quiz</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgoQuiz Cyber Arena</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="quiz-container">
-        <h1>Coding Interview Quiz</h1>
+  <div class="background-layer" aria-hidden="true"></div>
+  <main class="quiz-container">
+    <div id="loading-spinner" role="status" aria-live="polite">Loading quiz data...</div>
 
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" data-tab="quiz">Quiz</button>
-            <button class="tab-button" data-tab="question-list">Question List</button>
-            <button class="tab-button" data-tab="review">Review Progress</button>
-        </div>
+    <header class="app-header">
+      <h1>AlgoQuiz Cyber Arena</h1>
+      <p class="app-subtitle">Blind 75 drills with arcade feedback and interview-grade explanations.</p>
+    </header>
 
-        <!-- Quiz Tab Content -->
-        <div class="tab-content active" id="quiz-tab">
-            <!-- Progress Bar Area -->
-            <div class="progress-container">
-                <div id="progress-text"></div>
-                <div class="progress-bar-container">
-                    <div id="progress-bar-fill"></div>
-                </div>
-            </div>
-            <!-- End Progress Bar Area -->
-
-            <div id="question-area">
-                <h2 id="problem-title"></h2>
-                <div id="problem-statement"></div>
-                <pre><code id="code-skeleton" class="language-python"></code></pre>
-                <p><strong># TODO: Choose the correct implementation below</strong></p>
-            </div>
-
-            <div id="choices-area">
-                <!-- Choices will be populated by JavaScript -->
-            </div>
-
-            <button id="check-button">Check Answer</button>
-
-            <div id="feedback-area">
-                <!-- Feedback Correct/Incorrect will appear here -->
-            </div>
-            <button id="next-button" style="display: none;">Next Question</button>
-        </div>
-
-        <!-- Question List Tab Content -->
-        <div class="tab-content" id="question-list-tab">
-            <div id="questions-list">
-                <!-- Questions list will be populated by JavaScript -->
-            </div>
-        </div>
-
-        <!-- Review Tab Content -->
-        <div class="tab-content" id="review-tab">
-            <h2>Session Review</h2>
-            <div id="review-summary">
-                <!-- Summary stats will go here -->
-            </div>
-            <ul id="review-list">
-                <!-- Review items will be populated here -->
-            </ul>
-            <button id="reset-progress-button">Reset Progress</button>
-        </div>
-
+    <div class="tab-navigation" role="tablist" aria-label="Quiz views">
+      <button class="tab-button active" data-tab="quiz" role="tab" aria-selected="true">Quiz</button>
+      <button class="tab-button" data-tab="question-list" role="tab" aria-selected="false">Question List</button>
+      <button class="tab-button" data-tab="review" role="tab" aria-selected="false">Review Progress</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-    <script src="quiz.js"></script>
+    <section class="tab-content active" id="quiz-tab" role="tabpanel">
+      <div class="progress-container">
+        <div class="progress-top-row">
+          <div id="progress-text"></div>
+          <div class="gamification-bar" aria-live="polite">
+            <span id="streak-display">Streak: <span id="streak-count">0</span></span>
+            <span id="xp-display">XP: <span id="xp-count">0</span></span>
+          </div>
+        </div>
+        <div class="progress-bar-container" aria-hidden="true">
+          <div id="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <div id="question-area">
+        <h2 id="problem-title"></h2>
+        <div id="problem-statement"></div>
+        <pre><code id="code-skeleton" class="language-python"></code></pre>
+        <p class="todo-hint"><strong># TODO: Choose the best implementation</strong></p>
+      </div>
+
+      <form id="choices-area" aria-label="Answer options"></form>
+
+      <button id="check-button">Check Answer</button>
+
+      <div id="feedback-area" class="feedback-area" aria-live="polite"></div>
+      <button id="next-button" style="display: none;">Next Question</button>
+    </section>
+
+    <section class="tab-content" id="question-list-tab" role="tabpanel">
+      <div id="questions-list"></div>
+    </section>
+
+    <section class="tab-content" id="review-tab" role="tabpanel">
+      <h2>Session Review</h2>
+      <div id="review-summary"></div>
+      <ul id="review-list"></ul>
+      <button id="reset-progress-button">Reset Progress</button>
+    </section>
+  </main>
+
+  <div id="achievement-toast-container" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <script type="module" src="quiz.js"></script>
 </body>
 </html>
